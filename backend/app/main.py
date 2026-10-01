@@ -1,9 +1,12 @@
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from app.config import get_settings
 from app.database import SessionLocal
+from app.routes.auth import router as auth_router
+from app.routes.kitchens import router as kitchens_router
+from app.utils.auth import get_current_user
 
 
 settings = get_settings()
@@ -20,6 +23,16 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+app.include_router(
+    auth_router,
+    prefix="/api/v1",
+)
+
+app.include_router(
+    kitchens_router,
+    prefix="/api/v1",
 )
 
 
@@ -46,3 +59,10 @@ def api_root() -> dict[str, str]:
         "version": "v1",
         "status": "ok",
     }
+
+
+@app.get("/api/v1/auth/me")
+def get_me(
+    current_user: dict = Depends(get_current_user),
+) -> dict:
+    return current_user
