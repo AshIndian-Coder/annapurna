@@ -37,6 +37,13 @@ make vet                 # go vet
 ./scripts/smoke.sh       # end-to-end HTTP test against a running server
 ```
 
+Current smoke-test coverage (55 checks): health/readiness, login, rotating
+refresh tokens with reuse detection, logout, surplus create/validate, quality
+verification (valid image, non-image → 415, missing batch → 422), approval,
+the safety-rejected guard, QR timeline/verify/append with idempotent replay,
+diversion and its state guards, the SSE stream scoping, and offline-sync
+dedupe.
+
 `scripts/smoke.sh` drives the real API: login → create surplus → upload a
 photo for the quality check → approve → inspect/verify the QR chain → divert →
 offline-sync replay. It prints a PASS/FAIL per check and exits non-zero on
