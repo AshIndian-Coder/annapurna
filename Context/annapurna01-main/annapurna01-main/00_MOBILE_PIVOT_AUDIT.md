@@ -1,1 +1,0 @@
-(superseded — the current audit is 00_STACK_PIVOT_AUDIT.md, which covers both the v2 mobile pivot and the v3 Go + Flutter stack pivot)

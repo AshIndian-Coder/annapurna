@@ -1,2 +1,0 @@
-# annapurna
-AI BASED FOOD ECOSYSTEM
