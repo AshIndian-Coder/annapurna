@@ -1,136 +1,43 @@
-# Annapurna Backend — AI-Powered Food Waste Mitigation & Surplus Redistribution Platform
-**Project Reference:** SIH26234 | Ministry of Food Processing Industries  
-**Stack:** Go 1.23+ (Chi Router), PostgreSQL 16 + PostGIS, Redis 7, Asynq, Docker  
+# Project Annapurna — AI-Powered Food Waste Mitigation & Redistribution Platform
+**Problem Statement Reference:** SIH26234 | Ministry of Food Processing Industries (MoFPI)  
 
 ---
 
-## Part 1: Quick Setup & Getting Started Guide
+## 1. Problem Statement (PS) Context & Real-World Challenge
 
-If you want to run and test the backend on your own machine, follow these simple steps:
+In large-scale institutional dining operations — such as university campus messes, corporate cafeterias, hospital kitchens, and event caterers — massive quantities of freshly prepared, highly nutritious food are discarded every day. 
 
-### Prerequisites
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (running)
-- [Go 1.23+](https://go.dev/dl/) installed
-- Windows PowerShell (or bash on Linux/macOS)
-
----
-
-### Step 1: Start Database & Cache Containers
-Spin up PostgreSQL (with PostGIS) on port `5433` and Redis on port `6379`:
-```powershell
-docker compose up -d
-```
-Verify the containers are healthy:
-```powershell
-docker ps
-```
+### Why this happens today:
+1. **Demand Forecasting Errors:** Kitchen managers rely on static manual headcount estimates rather than dynamic demand signals, resulting in systematic daily overproduction (15–30% surplus).
+2. **Food Safety Uncertainty & Liability Fears:** Kitchens discard safe, surplus food because they lack an objective, verifiable mechanism to prove that food stored for several hours has remained outside the danger temperature zone (5°C to 60°C).
+3. **Logistics & Matching Friction:** Connecting perishable surplus to NGOs is done via frantic phone calls. Without real-time geospatial proximity matching, food spoils before it can be collected and transported.
+4. **Lack of Custody & Traceability:** No tamper-evident record exists to verify who prepared, transported, and received food, creating hesitation among donors and recipients.
+5. **Connectivity Blackouts in Field Ops:** Kitchen basements and rural NGO drop-off points frequently lack internet connectivity, causing manual tracking to break down.
 
 ---
 
-### Step 2: Environment Configuration
-Copy the sample environment file to `.env`:
-```powershell
-Copy-Item .env.example .env
-```
-*(The default `.env` is already pre-configured to match the Docker container ports, JWT secrets, and demo settings).*
+## 2. What We Are Building
+
+**Annapurna** is a high-throughput, mobile-first surplus food redistribution platform that stops waste at the source and connects edible food to nearby shelters before it spoils.
+
+### Core Capabilities:
+- **Pre-Cooking Demand Prediction:** Forecasts meal consumption curves using quantile regression to minimize initial overproduction.
+- **AI & Computer Vision Food Quality Assurance:** Evaluates food freshness using computer vision combined with IoT temperature sensor telemetry to ensure only safe food reaches beneficiaries.
+- **Fair Geospatial Matching:** Automatically matches available surplus with nearby verified NGOs based on travel-time windows, recipient capacity, and 48-hour historical fairness balance.
+- **Cryptographic SHA-256 Custody Chain:** Generates a tamper-evident QR audit chain for every physical handoff (Kitchen $\rightarrow$ Transporter $\rightarrow$ NGO).
+- **Secondary Recovery Hierarchy:** Automatically diverts food unsuitable for direct human consumption to animal feed, composting, or biogas production.
+- **Offline-First Synchronization:** Allows kitchen and logistics workers to scan QR codes and log events in airplane mode, automatically syncing with guaranteed deduplication upon reconnection.
 
 ---
 
-### Step 3: Build and Launch the Backend Server
-Compile the Go API server and run the binary:
-```powershell
-# Build binary
-go build -o bin/server.exe ./cmd/server
+## 3. Technology Stack & Architecture Justifications
 
-# Run server (runs on http://localhost:8080)
-.\bin\server.exe
-```
-
-When started, you should see:
-```text
-{"time":"...","level":"INFO","msg":"connected to postgres"}
-{"time":"...","level":"INFO","msg":"connected to redis"}
-{"time":"...","level":"INFO","msg":"Go backend server starting","port":8080}
-```
-
----
-
-### Step 4: Run the Automated End-to-End Test Suite
-In a **second PowerShell terminal**, run the automated test script:
-```powershell
-.\test_suite.ps1
-```
-This script executes all 10 core API workflows automatically and displays live green status checks.
-
----
-
-### Demo User Accounts (Pre-Seeded)
-| Role | Email | Password | Scope |
-|---|---|---|---|
-| **Kitchen** | `kitchen@example.com` | `demo123` | Institutional food production, surplus logging, quality checks |
-| **NGO** | `ngo@example.com` | `demo123` | Surplus claim, delivery acceptance, distribution tracking |
-| **Admin** | `admin@example.com` | `demo123` | Safety overrides, system audits, reporting |
-
----
-
-## Part 2: API Testing Report
-
-### 1. What Testing We Have Done
-We performed end-to-end integration testing covering the complete critical path of the food surplus lifecycle:
-1. **Liveness & Dependency Readiness:** Verified process uptime and active database/cache connections.
-2. **Authentication & Token Lifecycle:** Verified password bcrypt verification, JWT claims encoding, and profile retrieval.
-3. **Surplus Food Batch Logging:** Created real surplus batches in PostgreSQL with timestamps, weight ($kg$), and safety statuses.
-4. **Food Safety Quality Assurance:** Evaluated temperature and visual checks against safety thresholds.
-5. **Human Inspection & Approval:** Approved food batches to transition status from `PENDING_SAFETY` to `AVAILABLE`, generating cryptographic SHA-256 custody chain hashes.
-6. **Food Diversion:** Tested diversion of expired or spoiled food to non-human channels (`DIVERTED`).
-7. **Offline-First Synchronization:** Replayed batch transactions simulated from offline field environments with UUIDv7 deduplication.
-
----
-
-### 2. Live Test Results Table
-
-| # | Test Case / Workflow | HTTP Method & Route | Expected Result | Actual Result | Status |
-|---|---|---|---|---|---|
-| **1** | Process Health Probe | `GET /health` | HTTP 200 `{"status":"ok"}` | `{"status":"ok"}` | **PASS ✅** |
-| **2** | Deep Dependency Probe | `GET /ready` | HTTP 200, DB=True, Redis=ok | `{"database":true,"redis":"ok","status":"ready"}` | **PASS ✅** |
-| **3** | Kitchen Login | `POST /api/v1/auth/login` | HTTP 200, Signed JWT token | JWT access token received | **PASS ✅** |
-| **4** | User Profile Identity | `GET /api/v1/auth/me` | HTTP 200, Role=KITCHEN | User: `kitchen@example.com`, Role: `KITCHEN` | **PASS ✅** |
-| **5** | Create Surplus Batch | `POST /api/v1/surplus` | HTTP 201, Status=PENDING_SAFETY | Batch created (ID: `e19c242c-...`, 15.0 kg) | **PASS ✅** |
-| **6** | Quality Safety Check | `POST /api/v1/quality/check` | HTTP 200, Visual & Temp evaluation | Visual: `GOOD`, Check stored in DB | **PASS ✅** |
-| **7** | Human Batch Approval | `POST /api/v1/surplus/{id}/approve` | HTTP 200, Status=APPROVED | Batch transitioned to `AVAILABLE` with SHA-256 hash | **PASS ✅** |
-| **8** | Food Diversion Route | `POST /api/v1/surplus/{id}/divert` | HTTP 200, Status=DIVERTED | Batch transitioned to `DIVERTED` | **PASS ✅** |
-| **9** | Multi-Tenant Surplus List | `GET /api/v1/surplus` | HTTP 200, List of batches | Returns all active kitchen batches | **PASS ✅** |
-| **10** | Offline Batch Replay | `POST /api/v1/sync/batch` | HTTP 200, Applied=1, Duplicates=0 | Applied: 1, Duplicates: 0 | **PASS ✅** |
-
----
-
-### 3. Live Execution Terminal Output
-```text
-==========================================================
-         ANNAPURNA BACKEND END-TO-END TEST SUITE          
-==========================================================
-[1/10] GET /health                      => PASS (Status: ok)
-[2/10] GET /ready                       => PASS (DB: True, Redis: ok)
-[3/10] POST /api/v1/auth/login          => PASS (JWT Token Acquired)
-[4/10] GET /api/v1/auth/me              => PASS (User: kitchen@example.com, Role: KITCHEN)
-[5/10] POST /api/v1/surplus (Batch 1)   => PASS (ID: e19c242c-b846-4411-9a88-0daf717e5741, Status: PENDING_SAFETY)
-[6/10] POST /api/v1/quality/check       => PASS (Visual: GOOD)
-[7/10] POST /api/v1/surplus/{id}/approve => PASS (New Status: APPROVED)
-       Verification: Batch 1 Detail     => Status: AVAILABLE (ApprovedBy: 11111111-1111-1111-1111-111111111111)
-[8/10] POST /api/v1/surplus/{id}/divert  => PASS (Diverted ID: 369e9fc4-b829-4eab-be2c-24c9ec3561b7, Status: DIVERTED)
-[9/10] GET /api/v1/surplus (List)        => PASS (Found 4 batches total)
-[10/10] POST /api/v1/sync/batch          => PASS (Applied: 1, Duplicates: 0)
-==========================================================
-          ALL 10 END-TO-END TESTS PASSED 100%!            
-==========================================================
-```
-
----
-
-### 4. Remaining Testing & Roadmap
-The following secondary and integration endpoints are scheduled for subsequent test phases:
-1. **Geospatial Proximity Matching:** Testing PostGIS radius queries matching `AVAILABLE` surplus batches with candidate NGOs.
-2. **Vehicle Routing Problem (VRP) Integration:** Testing multi-stop driver route generation via the Python OR-Tools sidecar.
-3. **FCM Push Notification Dispatch:** Testing mobile device token registration and push delivery over Firebase Cloud Messaging.
-4. **Automated Asynq Expiry Sweep:** Testing the 1-minute background cron job that auto-expires uncollected batches.
-5. **ESG Compliance PDF Generation:** Testing downloadable sustainability reports generated via `maroto/v2`.
+| Technology | Role | Technical Justification |
+|---|---|---|
+| **Go 1.23+ (Chi Router)** | Core REST API Backend | **Why Go?** Extreme throughput, minimal memory footprint (~25 MB RSS), and zero GC pauses on critical paths. Unlike Python or Node.js web frameworks, Go provides compile-time type safety and native high-concurrency goroutines ideal for high-frequency IoT and mobile sync I/O. |
+| **PostgreSQL 16 + PostGIS** | Primary Relational & Spatial Database | **Why Postgres + PostGIS?** Strict ACID guarantees prevent race conditions when multiple NGOs claim the same surplus batch. PostGIS provides native spatial spherical indexing (`ST_DWithin`, `ST_DistanceSphere`), enabling sub-millisecond proximity queries between kitchens and shelters. |
+| **Redis 7** | Cache, Locks & Message Broker | **Why Redis?** Dual-database configuration: <br>• **DB 0:** Sub-millisecond session caching, distributed locks (preventing double-claims during matching), and Server-Sent Events (SSE) pub/sub.<br>• **DB 1:** Storage backend for asynchronous job queues. |
+| **Asynq** | Distributed Background Task Queue | **Why Asynq?** Reliable, Redis-backed asynchronous worker system with priority queues (`critical`, `default`, `low`). Offloads non-blocking workloads (1-minute automated food expiry sweeps, offer timeouts, push notifications) away from the HTTP request thread. |
+| **SHA-256 QR Custody Chain** | Tamper-Evident Proof Engine | **Why custom cryptographic chaining?** Each handoff event hashes the prior event's hash, actor ID, batch UUID, timestamp, and sensory evidence ($H_n = \text{SHA256}(H_{n-1} \parallel \text{data})$). If any record is altered in the database, the cryptographic chain breaks, providing instant proof of tampering without the cost or latency of a public blockchain. |
+| **Offline-First Outbox Pattern** | Field Resiliency Engine | **Why an offline outbox?** Kitchen basements and delivery drop-offs often have zero network. The system assigns client UUIDv7 IDs and replays queued transactions sequentially on the `/api/v1/sync/batch` endpoint with idempotent Redis deduplication. |
+| **Docker & Docker Compose** | Infrastructure Virtualization | Provides a one-command reproducible local environment ensuring identical PostgreSQL and Redis configurations across development, testing, and production. |
