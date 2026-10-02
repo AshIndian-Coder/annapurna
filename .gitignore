@@ -105,3 +105,31 @@ temp/
 # Misc
 # =========================
 .Docker/
+
+# =========================
+# Flutter / Dart
+# =========================
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+.flutter-plugins
+.flutter-plugins-dependencies
+**/*.g.dart
+**/*.freezed.dart
+
+# Android
+**/*.keystore
+**/android/key.properties
+**/android/local.properties
+**/android/app/build/
+**/android/app/src/main/google-services.json
+
+# iOS
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.podspec
+**/ios/Runner/GoogleService-Info.plist
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/ios/Runner.xcworkspace/xcuserdata/
+
