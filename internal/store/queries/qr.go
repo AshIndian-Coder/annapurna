@@ -15,15 +15,15 @@ import (
 
 // QREvent mirrors the qr_events table.
 type QREvent struct {
-	ID            uuid.UUID
-	BatchID       uuid.UUID
-	EventType     string // created | picked_up | delivered | safety_check | rejected
-	ActorID       uuid.UUID
-	PrevHash      string
-	EventHash     string
-	EvidenceHash  *string
-	ServerTS      time.Time
-	CreatedAt     time.Time
+	ID           uuid.UUID
+	BatchID      uuid.UUID
+	EventType    string // created | picked_up | delivered | safety_check | rejected
+	ActorID      uuid.UUID
+	PrevHash     string
+	EventHash    string
+	EvidenceHash *string
+	ServerTS     time.Time
+	CreatedAt    time.Time
 }
 
 // CreateQREventParams holds insert fields.

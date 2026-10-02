@@ -1,4 +1,4 @@
-﻿package services
+package services
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -62,17 +63,29 @@ func (s *ApproveService) Approve(
 		)
 	}
 
-	newStatus := StatusAvailable
-	if req.Decision == "HOLD" {
-		newStatus = StatusHold
-	} else if req.Decision == "REJECT" {
-		newStatus = StatusDiverted
+	// Decision → (batch status, safety status). The safety status vocabulary is
+	// fixed by the API contract (PENDING|ELIGIBLE|HOLD|REJECTED); the raw
+	// decision verb must never be written to the column.
+	var newStatus SurplusStatus
+	var safetyStatus string
+	switch strings.ToUpper(req.Decision) {
+	case "APPROVE":
+		newStatus, safetyStatus = StatusAvailable, "ELIGIBLE"
+	case "HOLD":
+		newStatus, safetyStatus = StatusHold, "HOLD"
+	case "REJECT":
+		newStatus, safetyStatus = StatusDiverted, "REJECTED"
+	default:
+		return &ConflictError{
+			Code:    "INVALID_DECISION",
+			Message: fmt.Sprintf("decision must be APPROVE, HOLD or REJECT (got %q)", req.Decision),
+		}
 	}
 
 	now := time.Now().UTC()
 	_, err = s.pool.Exec(ctx,
 		`UPDATE surplus_batches SET status=$1, safety_status=$2, approved_by=$3, approved_at=$4, updated_at=$4 WHERE id=$5`,
-		string(newStatus), req.Decision, userID, now, batchID,
+		string(newStatus), safetyStatus, userID, now, batchID,
 	)
 	if err != nil {
 		return fmt.Errorf("update surplus approval status: %w", err)

@@ -15,13 +15,13 @@ import (
 
 // RefreshToken mirrors the refresh_tokens table.
 type RefreshToken struct {
-	ID         uuid.UUID
-	UserID     uuid.UUID
-	TokenHash  string  // SHA-256 hex of the raw token sent to the client
-	FamilyID   uuid.UUID
-	IsRevoked  bool
-	ExpiresAt  time.Time
-	CreatedAt  time.Time
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	TokenHash string // SHA-256 hex of the raw token sent to the client
+	FamilyID  uuid.UUID
+	IsRevoked bool
+	ExpiresAt time.Time
+	CreatedAt time.Time
 }
 
 // CreateRefreshTokenParams holds insert fields.

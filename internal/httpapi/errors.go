@@ -43,10 +43,10 @@ type AppError struct {
 func (e *AppError) Error() string { return e.Code + ": " + e.Message }
 
 type errorEnvelope struct {
-	Detail  string    `json:"detail"`
-	Code    string    `json:"code"`
-	Message string    `json:"message"`
-	Details any       `json:"details,omitempty"`
+	Detail  string `json:"detail"`
+	Code    string `json:"code"`
+	Message string `json:"message"`
+	Details any    `json:"details,omitempty"`
 }
 
 func (e *AppError) Render(w http.ResponseWriter) {
@@ -75,6 +75,13 @@ func NewNotFound(resource string) *AppError {
 func NewValidation(msg string, details any) *AppError {
 	return &AppError{Code: CodeValidation, Message: msg, Status: http.StatusUnprocessableEntity, Details: details}
 }
+
+// NewAppError builds an error with an explicit status, used for contract codes
+// that are not covered by the helpers below (e.g. REFRESH_TOKEN_REUSED).
+func NewAppError(code, msg string, status int) *AppError {
+	return &AppError{Code: code, Message: msg, Status: status}
+}
+
 func NewConflict(code, msg string) *AppError {
 	return &AppError{Code: code, Message: msg, Status: http.StatusConflict}
 }

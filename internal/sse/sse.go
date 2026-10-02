@@ -160,6 +160,13 @@ func (h *Hub) SSEHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.StreamKitchen(w, r, kitchenID)
+}
+
+// StreamKitchen streams a specific kitchen's events. Callers that have already
+// authenticated the request (and therefore resolved the kitchen from the
+// caller's own claims rather than from user input) should use this directly.
+func (h *Hub) StreamKitchen(w http.ResponseWriter, r *http.Request, kitchenID string) {
 	flusher, ok := w.(http.Flusher)
 	if !ok {
 		http.Error(w, "streaming unsupported", http.StatusInternalServerError)
@@ -172,6 +179,16 @@ func (h *Hub) SSEHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Accel-Buffering", "no")
 
 	ctx := r.Context()
+
+	// Tell the client immediately which kitchen it is attached to, so a
+	// misconfigured client fails fast instead of waiting for the first event.
+	writeEvent(w, Event{
+		ID:   fmt.Sprintf("%d", time.Now().UnixNano()),
+		Type: "connected",
+		Data: fmt.Sprintf(`{"status":"connected","kitchen_id":%q}`, kitchenID),
+		TS:   time.Now().UTC(),
+	})
+	flusher.Flush()
 
 	// Replay recent events if Last-Event-ID is set.
 	lastID := r.Header.Get("Last-Event-ID")

@@ -15,14 +15,14 @@ import (
 
 // QualityCheck mirrors the quality_checks table.
 type QualityCheck struct {
-	ID           uuid.UUID
-	BatchID      uuid.UUID
-	InspectorID  uuid.UUID
-	Score        float64
-	Notes        *string
-	ImageURLs    []string
-	CheckedAt    time.Time
-	CreatedAt    time.Time
+	ID          uuid.UUID
+	BatchID     uuid.UUID
+	InspectorID uuid.UUID
+	Score       float64
+	Notes       *string
+	ImageURLs   []string
+	CheckedAt   time.Time
+	CreatedAt   time.Time
 }
 
 // CreateQualityCheckParams holds insert fields.

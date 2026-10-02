@@ -2,40 +2,57 @@
 SHELL       := /bin/bash
 GO          := go
 BINARY      := bin/server
-MIGRATE_DIR := migrations
+MIGRATE_DIR := database/migrations
 DB_URL      ?= $(DATABASE_URL)
 
-.PHONY: up down seed test lint gen gen-drift eval bundle demo reset report
+.PHONY: up down migrate-up migrate-down migrate-version seed run worker test lint vet \
+        gen gen-drift demo reset fmt
 
 # ── Docker Compose lifecycle ───────────────────────────────────────────────────
 up:
 	docker compose up -d
 	@echo "Waiting for postgres..."
 	@until docker compose exec postgres pg_isready -q; do sleep 1; done
-	$(MAKE) _migrate-up
+	$(MAKE) migrate-up
 
 down:
 	docker compose down -v --remove-orphans
 
 # ── Database migrations ────────────────────────────────────────────────────────
-_migrate-up:
-	$(GO) run -tags 'postgres' \
-		github.com/golang-migrate/migrate/v4/cmd/migrate \
-		-path=$(MIGRATE_DIR) -database="$(DB_URL)" up
+# cmd/migrate is a dependency-free runner that keeps the same
+# schema_migrations(version, dirty) table golang-migrate uses, so the two are
+# interchangeable.
+migrate-up:
+	$(GO) run ./cmd/migrate -dir=$(MIGRATE_DIR) up
 
-_migrate-down:
-	$(GO) run -tags 'postgres' \
-		github.com/golang-migrate/migrate/v4/cmd/migrate \
-		-path=$(MIGRATE_DIR) -database="$(DB_URL)" down 1
+migrate-down:
+	$(GO) run ./cmd/migrate -dir=$(MIGRATE_DIR) down
 
+migrate-version:
+	$(GO) run ./cmd/migrate -dir=$(MIGRATE_DIR) version
+
+# ── Demo data (idempotent; regenerates QR chains through internal/qrchain) ─────
 seed:
-	$(GO) run ./cmd/seed/...
+	$(GO) run ./cmd/seed
+
+# ── Run the services ──────────────────────────────────────────────────────────
+run:
+	$(GO) run ./cmd/server
+
+worker:
+	$(GO) run ./cmd/worker
 
 # ── Tests ──────────────────────────────────────────────────────────────────────
 test:
 	$(GO) test -race -coverprofile=coverage.out -covermode=atomic ./...
 	$(GO) tool cover -html=coverage.out -o coverage.html
 	@echo "Coverage report: coverage.html"
+
+fmt:
+	$(GO) fmt ./...
+
+vet:
+	$(GO) vet ./...
 
 # ── Lint ───────────────────────────────────────────────────────────────────────
 lint:
@@ -55,23 +72,10 @@ gen-drift:
 		exit 1; \
 	fi
 
-# ── ML model evaluation ───────────────────────────────────────────────────────
-eval:
-	$(GO) run ./cmd/eval/... --bundle=$(MODEL_BUNDLE_DIR)
-
-# ── ML model bundle packaging ─────────────────────────────────────────────────
-bundle:
-	$(GO) run ./cmd/bundle/... --out=$(MODEL_BUNDLE_DIR)
-
 # ── Demo data + full stack ────────────────────────────────────────────────────
 demo: up seed
-	@echo "Demo stack ready. API at http://localhost:$(PORT)"
+	@echo "Demo stack ready. API at http://localhost:$${PORT:-8080}"
 
 # ── Full reset (nuke DB + redis, re-apply migrations, seed) ──────────────────
 reset: down up seed
 	@echo "Reset complete."
-
-# ── Generate PDF / metrics report ─────────────────────────────────────────────
-report:
-	$(GO) run ./cmd/report/... --output=report.pdf
-	@echo "Report written to report.pdf"
