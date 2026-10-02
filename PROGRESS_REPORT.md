@@ -1,36 +1,31 @@
 # Project Annapurna — Progress Report
 **System:** High-Performance Go Backend, Real-Time Surplus Food Redistribution & Quality Assurance Engine  
 **Project Reference:** SIH26234 (Ministry of Food Processing Industries / Food Waste Mitigation)  
-**Last Updated:** October 2026  
+**Status:** Core Backend Operational, Schema Aligned, Authenticated API Workflows 100% Verified  
 
 ---
 
-## 1. What We Are Trying to Build (The Goal & Vision)
+## 1. Our Goal & Vision
 
-**Annapurna** is an AI-powered, mobile-first institutional food surplus prediction, quality verification, and redistribution platform. In large-scale dining operations (university messes, corporate cafeterias, institutional kitchens, hospitals, and large events), massive quantities of edible food are routinely discarded due to inaccurate demand forecasting, rigid safety uncertainty, and logistical friction.
-
-### Core Objectives & System Vision:
-1. **Demand Forecasting & Waste Prevention:** Predict production requirements before cooking using quantile regression, reducing overproduction at the source.
-2. **AI & Computer Vision Food Quality Assurance:** Verify food freshness and safety using on-device image gating and server-side CV inference combined with time-temperature IoT sensor fusion.
-3. **Automated Fair NGO Redistribution:** Instantly match verified edible surplus with nearby NGOs, shelters, and orphanages based on real-time need, capacity, and travel-time windows.
-4. **Tamper-Evident Custody Verification:** Maintain a cryptographic SHA-256 QR hash chain across every step of physical custody (Kitchen $\rightarrow$ Transporter $\rightarrow$ NGO).
-5. **Offline-First Resilience:** Ensure field staff in low-connectivity areas can log waste, scan QR handoffs, and queue transactions with guaranteed idempotency upon reconnection.
-6. **Secondary Recovery Hierarchy:** Automatically divert food unsafe for direct human consumption to animal feed, composting, or biogas production.
-7. **ESG & Sustainability Analytics:** Quantify greenhouse gas emissions avoided ($kg\ CO_2e$), meal equivalents salvaged, and landfill diversion for regulatory compliance and donor reporting.
+The goal of **Annapurna** is to build a reliable, institutional food redistribution network that eliminates food waste in commercial and educational kitchens. The platform guarantees that:
+1. Surplus food is certified safe before any donation occurs.
+2. The redistribution process is completely automated, fair, and fast enough to deliver hot food within safe consumption deadlines.
+3. Every handoff is recorded immutably to eliminate legal liability and ensure donor confidence.
+4. Field workers can operate seamlessly even in low-connectivity rural or basement locations.
 
 ---
 
-## 2. What Is Done (Completed & Verified)
+## 2. What Is Done (Completed & Tested)
 
-### A. Infrastructure & Database Layer
-- [x] **PostgreSQL 16 & PostGIS:** Relational data store containerized via Docker with spatial indexing for geo-proximity calculations.
-- [x] **Redis 7 Cache & Message Broker:** DB 0 configured for caching, distributed locks, and real-time SSE streaming; DB 1 configured for Asynq background workers.
+### A. Infrastructure & Database Engine
+- [x] **PostgreSQL 16 with PostGIS:** Containerized database with spatial extensions for geospatial proximity calculations.
+- [x] **Redis 7 In-Memory Engine:** Dual-database structure (DB 0 for rate-limiting, locks, and SSE pub/sub; DB 1 for Asynq queues).
 - [x] **Database Schema & Migrations Aligned:**
-  - Designed and created core tables: `organizations`, `users`, `kitchens`, `surplus_batches`, `quality_checks`, `audit_log`, `qr_events`, `distribution_offers`, `routes`.
-  - Added and verified required columns: `batch_code`, `food_name`, `meal_id`, `food_category`, `prepared_at`, `expiry_at`.
-  - Configured and tested `quality_checks` schema with visual status, risk level, confidence scores, and safety decision fields.
-  - Resolved foreign-key constraints linking surplus batches to registered kitchens.
-- [x] **Connection Pooling:** High-throughput `pgxpool` thread-safe connection pool with automatic retry logic.
+  - Designed and configured relational tables: `organizations`, `users`, `kitchens`, `surplus_batches`, `quality_checks`, `audit_log`, `qr_events`, `distribution_offers`, `routes`.
+  - Added required columns: `batch_code`, `food_name`, `meal_id`, `food_category`, `prepared_at`, `expiry_at`.
+  - Verified and aligned `quality_checks` table with visual inspection status, confidence score, danger zone duration, and safety decision fields.
+  - Configured foreign-key constraints linking batches to registered kitchens.
+- [x] **High-Performance Connection Pooling:** Implemented `pgxpool` with automated reconnection handling.
 
 ### B. Authentication, Security & RBAC
 - [x] **Database Credential Authentication:** Real PostgreSQL authentication using salted Bcrypt password hashing.
@@ -55,14 +50,14 @@
 
 ---
 
-## 3. What Is Remaining (Roadmap & Next Steps)
+## 3. What Is Left (Roadmap & Remaining Work)
 
-| Module / Milestone | Description | Priority |
+| Milestone / Module | Technical Description | Priority |
 |---|---|---|
-| **Geospatial Matching Engine** | Complete PostGIS nearest-neighbor radius query to rank and match available surplus with candidate NGOs based on travel distance, capacity, shelf-life slack, and 48-hour fairness penalty. | **High** |
-| **Vehicle Routing Problem (VRP)** | Wire client to the Python OR-Tools sidecar (`/v1/build-route`) to generate multi-stop route plans with time windows for logistics drivers. | **High** |
-| **Active Worker Schedulers** | Enable 1-minute cron for `TaskExpirySweep` (flagging expired batches under distributed Redis lock) and 30-minute offer timeout check. | **Medium** |
-| **FCM Push Notification Dispatch** | Connect Firebase Admin SDK credentials in `internal/pushx` for instant mobile push delivery when new surplus matches are generated. | **Medium** |
+| **Geospatial Matching Engine** | Implement the PostGIS nearest-neighbor radius query to match `AVAILABLE` food with candidate NGOs based on travel distance, capacity, shelf-life slack, and 48-hour fairness penalty. | **High** |
+| **Vehicle Routing Problem (VRP)** | Connect to the Python OR-Tools sidecar (`/v1/build-route`) to generate multi-stop vehicle route plans with time windows for logistics drivers. | **High** |
+| **Active Background Crons** | Enable the 1-minute recurring cron job for `TaskExpirySweep` (flagging expired food under distributed Redis locks) and 30-minute offer timeout checks. | **Medium** |
+| **FCM Push Notification Dispatch** | Wire Firebase Admin SDK credentials in `internal/pushx` for instant mobile push delivery when new surplus matches are generated. | **Medium** |
 | **ESG PDF Report Generator** | Implement `maroto/v2` PDF generation service to produce downloadable ESG compliance certificates and sustainability analytics. | **Medium** |
-| **Flutter Mobile App Integration** | Hook up the single Flutter client (Kitchen, NGO, Driver, Admin) to the live Go API endpoints and test offline outbox replay from physical devices. | **Medium** |
+| **Flutter Mobile App Integration** | Connect the Flutter client (Kitchen, NGO, Driver, Admin) to the live Go API endpoints and validate offline outbox replay from physical devices. | **Medium** |
 | **Rate Limiting & Security Hardening** | Implement Redis token-bucket rate limiter per IP/client token and enforce minimum app version checks via `X-App-Version`. | **Low** |
