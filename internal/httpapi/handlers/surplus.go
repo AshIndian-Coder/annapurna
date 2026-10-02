@@ -3,10 +3,9 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/sih26234/food-waste/internal/auth"
 	"github.com/sih26234/food-waste/internal/httpapi"
 	"github.com/sih26234/food-waste/internal/services"
 )
@@ -20,17 +19,13 @@ func NewSurplusHandler(s *services.SurplusService, a *services.ApproveService) *
 	return &SurplusHandler{surplus: s, approve: a}
 }
 
-// claimsFromRequest extracts and verifies the JWT from the Authorization header.
-func claimsFromRequest(r *http.Request) (*auth.Claims, error) {
-	header := r.Header.Get("Authorization")
-	tokenStr := strings.TrimPrefix(header, "Bearer ")
-	return auth.VerifyAccessToken(tokenStr)
-}
-
+// Create handles POST /surplus → 201 with the new batch in PENDING_SAFETY.
 func (h *SurplusHandler) Create(w http.ResponseWriter, r *http.Request) {
-	claims, err := claimsFromRequest(r)
-	if err != nil {
-		httpapi.NewUnauthorized("invalid or missing token").Render(w)
+	claims, ok := requireClaims(w, r)
+	if !ok {
+		return
+	}
+	if !requireRole(w, claims, "KITCHEN") {
 		return
 	}
 
@@ -39,66 +34,139 @@ func (h *SurplusHandler) Create(w http.ResponseWriter, r *http.Request) {
 		httpapi.NewValidation("invalid request", err.Error()).Render(w)
 		return
 	}
-	// KitchenID from token scope; empty → service will insert NULL
+
 	batch, err := h.surplus.CreateSurplus(r.Context(), claims.KitchenID, claims.Subject, req)
 	if err != nil {
-		httpapi.NewInternal(err.Error()).Render(w)
+		renderServiceError(w, err)
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
+
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 	_ = json.NewEncoder(w).Encode(batch)
 }
 
+// List handles GET /surplus. KITCHEN users only ever see their own kitchen's
+// batches (row scoping); NGO/LOGISTICS/ADMIN see every batch they may act on.
 func (h *SurplusHandler) List(w http.ResponseWriter, r *http.Request) {
-	result, err := h.surplus.ListSurplus(r.Context(), services.ListSurplusParams{Limit: 20})
-	if err != nil {
-		httpapi.NewInternal(err.Error()).Render(w)
+	claims, ok := requireClaims(w, r)
+	if !ok {
 		return
 	}
+
+	params := services.ListSurplusParams{Limit: 20}
+	if claims.Role == "KITCHEN" {
+		params.KitchenID = claims.KitchenID
+	}
+	if limit := r.URL.Query().Get("limit"); limit != "" {
+		if n, err := strconv.Atoi(limit); err == nil {
+			params.Limit = n
+		}
+	}
+	if status := r.URL.Query().Get("status"); status != "" {
+		s := services.SurplusStatus(status)
+		params.Status = &s
+	}
+	if cursor := r.URL.Query().Get("cursor"); cursor != "" {
+		params.Cursor = &cursor
+	}
+
+	result, err := h.surplus.ListSurplus(r.Context(), params)
+	if err != nil {
+		renderServiceError(w, err)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(result)
 }
 
+// Get handles GET /surplus/{id}.
 func (h *SurplusHandler) Get(w http.ResponseWriter, r *http.Request) {
+	if _, ok := requireClaims(w, r); !ok {
+		return
+	}
 	id := chi.URLParam(r, "id")
 	batch, err := h.surplus.GetSurplus(r.Context(), id)
 	if err != nil {
-		httpapi.NewNotFound("surplus batch").Render(w)
+		renderServiceError(w, err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(batch)
 }
 
+// Approve handles POST /surplus/{id}/approve — always a human decision.
 func (h *SurplusHandler) Approve(w http.ResponseWriter, r *http.Request) {
-	claims, err := claimsFromRequest(r)
-	if err != nil {
-		httpapi.NewUnauthorized("invalid or missing token").Render(w)
+	claims, ok := requireClaims(w, r)
+	if !ok {
 		return
 	}
+	if !requireRole(w, claims, "KITCHEN") {
+		return
+	}
+
 	id := chi.URLParam(r, "id")
 	var req services.ApproveRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httpapi.NewValidation("invalid request", err.Error()).Render(w)
 		return
 	}
-	err = h.approve.Approve(r.Context(), id, claims.Subject, claims.Role, req)
-	if err != nil {
-		httpapi.NewConflict("APPROVE_FAILED", err.Error()).Render(w)
+	if req.Decision == "" {
+		httpapi.NewValidation("decision is required", "APPROVE|HOLD|REJECT").Render(w)
 		return
 	}
+
+	if err := h.approve.Approve(r.Context(), id, claims.Subject, claims.Role, req); err != nil {
+		renderServiceError(w, err)
+		return
+	}
+
+	// Return the persisted post-decision state rather than an assumption.
+	batch, err := h.surplus.GetSurplus(r.Context(), id)
+	if err != nil {
+		renderServiceError(w, err)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(map[string]any{"batch_id": id, "status": "APPROVED"})
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"batch_id":      id,
+		"status":        batch.Status,
+		"safety_status": batch.SafetyStatus,
+		"approved_by":   batch.ApprovedBy,
+		"approved_at":   batch.ApprovedAt,
+	})
 }
 
+// Divert handles POST /surplus/{id}/divert (recovery hierarchy: feed/compost/
+// biogas). The stream is recorded in diversions when provided.
 func (h *SurplusHandler) Divert(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	err := h.surplus.Transition(r.Context(), id, services.StatusDiverted)
-	if err != nil {
-		httpapi.NewConflict("DIVERT_FAILED", err.Error()).Render(w)
+	claims, ok := requireClaims(w, r)
+	if !ok {
 		return
 	}
+	if !requireRole(w, claims, "KITCHEN") {
+		return
+	}
+
+	id := chi.URLParam(r, "id")
+	var req struct {
+		Stream     string  `json:"stream"`
+		QuantityKg float64 `json:"quantity_kg"`
+		Reason     string  `json:"reason"`
+	}
+	_ = json.NewDecoder(r.Body).Decode(&req) // body is optional
+
+	if err := h.surplus.Divert(r.Context(), id, claims.Subject, req.Stream, req.QuantityKg, req.Reason); err != nil {
+		renderServiceError(w, err)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(map[string]any{"batch_id": id, "status": "DIVERTED"})
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"batch_id": id,
+		"status":   string(services.StatusDiverted),
+		"stream":   req.Stream,
+	})
 }

@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -101,12 +102,25 @@ func (s *Service) RecordEvent(
 	computedHash := Hash(prevHash, batchID, eventType, actorID, nowISO, evHash)
 	eventID := uuid.NewString()
 
+	// client_event_id / client_ts are provenance only and are never part of the
+	// hash input (D24), but they MUST be persisted: the unique index on
+	// client_event_id is what makes an offline replay idempotent when the
+	// Redis dedupe cache is cold or unavailable.
 	_, err = s.pool.Exec(ctx,
-		`INSERT INTO qr_events (id, batch_id, event_type, actor_id, prev_hash, event_hash, evidence_hash, server_ts, created_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8)`,
+		`INSERT INTO qr_events (id, batch_id, event_type, actor_id, prev_hash, event_hash, evidence_hash,
+		                       server_ts, client_event_id, client_ts, created_at)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $8)`,
 		eventID, batchID, eventType, actorID, prevHash, computedHash, evidenceHash, now,
+		clientEventID, clientTS,
 	)
 	if err != nil {
+		// A replayed offline event carries the same client_event_id; return the
+		// previously recorded event instead of failing the sync item.
+		if isUniqueViolation(err) && clientEventID != nil {
+			if existing, qerr := s.eventByClientID(ctx, *clientEventID); qerr == nil {
+				return existing, nil
+			}
+		}
 		return nil, fmt.Errorf("insert qr event: %w", err)
 	}
 
@@ -119,6 +133,27 @@ func (s *Service) RecordEvent(
 		Hash:      computedHash,
 		CreatedAt: now,
 	}, nil
+}
+
+// eventByClientID loads an already-recorded event for an offline replay.
+func (s *Service) eventByClientID(ctx context.Context, clientEventID string) (*EventResult, error) {
+	var e EventResult
+	err := s.pool.QueryRow(ctx,
+		`SELECT id, batch_id, event_type, actor_id, prev_hash, event_hash, created_at
+		 FROM qr_events WHERE client_event_id = $1 LIMIT 1`,
+		clientEventID,
+	).Scan(&e.ID, &e.BatchID, &e.EventType, &e.ActorID, &e.PrevHash, &e.Hash, &e.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return &e, nil
+}
+
+// isUniqueViolation reports whether the error is a PostgreSQL unique-violation
+// (SQLSTATE 23505).
+func isUniqueViolation(err error) bool {
+	var pgErr *pgconn.PgError
+	return errors.As(err, &pgErr) && pgErr.Code == "23505"
 }
 
 // Hash computes the canonical event hash.

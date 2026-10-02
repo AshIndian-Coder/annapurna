@@ -15,18 +15,18 @@ import (
 
 // SurplusBatch mirrors the surplus_batches table.
 type SurplusBatch struct {
-	ID              uuid.UUID
-	KitchenID       uuid.UUID
-	FoodType        string
-	QuantityKg      float64
-	ExpiresAt       time.Time
-	PickupAddress   string
-	Status          string // available | matched | collected | expired
-	SafetyStatus    string // pending | approved | rejected
-	ApprovedBy      *uuid.UUID
-	ApprovedAt      *time.Time
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
+	ID            uuid.UUID
+	KitchenID     uuid.UUID
+	FoodType      string
+	QuantityKg    float64
+	ExpiresAt     time.Time
+	PickupAddress string
+	Status        string // available | matched | collected | expired
+	SafetyStatus  string // pending | approved | rejected
+	ApprovedBy    *uuid.UUID
+	ApprovedAt    *time.Time
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 // CreateSurplusBatchParams holds the fields required when inserting.

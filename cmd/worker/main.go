@@ -41,6 +41,7 @@ func loadDotEnv(path string) {
 }
 
 func main() {
+	config.LoadDotEnv(".env")
 	loadDotEnv(".env")
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))

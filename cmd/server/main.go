@@ -1,14 +1,12 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
@@ -30,41 +28,18 @@ import (
 	"github.com/sih26234/food-waste/internal/store"
 )
 
-// loadDotEnv reads a .env file and sets any key=value pairs as environment
-// variables, skipping lines that are blank or start with '#'. Existing env
-// vars are never overwritten so real OS env always takes precedence.
-func loadDotEnv(path string) {
-	f, err := os.Open(path)
-	if err != nil {
-		return // .env is optional; silently ignore if absent
-	}
-	defer f.Close()
-
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line == "" || strings.HasPrefix(line, "#") {
-			continue
-		}
-		parts := strings.SplitN(line, "=", 2)
-		if len(parts) != 2 {
-			continue
-		}
-		key := strings.TrimSpace(parts[0])
-		val := strings.TrimSpace(parts[1])
-		if os.Getenv(key) == "" { // don't override existing env vars
-			_ = os.Setenv(key, val)
-		}
-	}
-}
-
 func main() {
-	loadDotEnv(".env") // load .env before anything else
+	config.LoadDotEnv(".env") // developer convenience; real env vars win
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
 	slog.SetDefault(logger)
 
 	cfg := config.Load()
+
+	// Uploads are written with UUID filenames (never client-supplied paths).
+	if err := os.MkdirAll(cfg.UploadsDir, 0o755); err != nil {
+		logger.Error("could not create uploads directory", "dir", cfg.UploadsDir, "error", err)
+	}
 
 	ctx := context.Background()
 
@@ -107,8 +82,9 @@ func main() {
 
 	hAuth := handlers.NewAuthHandler(pool, rdb, cfg)
 	hSurplus := handlers.NewSurplusHandler(surplusSvc, approveSvc)
-	hQuality := handlers.NewQualityHandler(qualitySvc)
+	hQuality := handlers.NewQualityHandler(qualitySvc, cfg.MaxUploadMB, cfg.UploadsDir)
 	hSync := handlers.NewSyncHandler(syncSvc)
+	hQR := handlers.NewQRHandler(qrSvc)
 	hHealth := handlers.NewHealthHandler(pool, rdb)
 	hEvents := handlers.NewEventsHandler(sseHub)
 
@@ -138,6 +114,11 @@ func main() {
 		r.Post("/quality/check", hQuality.Check)
 
 		r.Post("/sync/batch", hSync.Batch)
+
+		// Append-only QR hash chain (contract rows 22-24).
+		r.Get("/qr/{batchID}", hQR.Get)
+		r.Post("/qr/{batchID}/event", hQR.RecordEvent)
+		r.Get("/qr/{batchID}/verify", hQR.Verify)
 
 		r.Get("/events/stream", hEvents.Stream)
 	})

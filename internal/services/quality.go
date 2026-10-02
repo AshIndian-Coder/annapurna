@@ -13,16 +13,16 @@ import (
 )
 
 type QualityCheckResult struct {
-	ID                    string          `json:"id"`
-	BatchID               string          `json:"batch_id"`
-	VisualStatus          string          `json:"visual_status"`
-	RiskLevel             string          `json:"risk_level"`
-	Confidence            float64         `json:"confidence"`
-	Reason                string          `json:"reason"`
-	SafetyDecision        string          `json:"safety_decision"`
-	DangerZoneMinutes     float64         `json:"danger_zone_minutes"`
-	RequiresHumanApproval bool            `json:"requires_human_approval"`
-	CreatedAt             time.Time       `json:"created_at"`
+	ID                    string    `json:"id"`
+	BatchID               string    `json:"batch_id"`
+	VisualStatus          string    `json:"visual_status"`
+	RiskLevel             string    `json:"risk_level"`
+	Confidence            float64   `json:"confidence"`
+	Reason                string    `json:"reason"`
+	SafetyDecision        string    `json:"safety_decision"`
+	DangerZoneMinutes     float64   `json:"danger_zone_minutes"`
+	RequiresHumanApproval bool      `json:"requires_human_approval"`
+	CreatedAt             time.Time `json:"created_at"`
 }
 
 type QualityService struct {

@@ -19,3 +19,14 @@ Thumbs.db
 # Testing and coverage
 *.out
 *.test
+
+# Go workspace files (machine-local mirrors / overrides)
+go.work
+go.work.sum
+go.sandbox.mod
+go.sandbox.sum
+
+# Local runtime state
+storage/uploads/*
+!storage/uploads/.gitkeep
+*.log

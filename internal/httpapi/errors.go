@@ -43,10 +43,10 @@ type AppError struct {
 func (e *AppError) Error() string { return e.Code + ": " + e.Message }
 
 type errorEnvelope struct {
-	Detail  string    `json:"detail"`
-	Code    string    `json:"code"`
-	Message string    `json:"message"`
-	Details any       `json:"details,omitempty"`
+	Detail  string `json:"detail"`
+	Code    string `json:"code"`
+	Message string `json:"message"`
+	Details any    `json:"details,omitempty"`
 }
 
 func (e *AppError) Render(w http.ResponseWriter) {

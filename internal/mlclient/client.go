@@ -157,11 +157,11 @@ type MLClient struct {
 	mockCV      bool
 	mockRouting bool
 
-	cbDemand    *gobreaker.CircuitBreaker
-	cbSafety    *gobreaker.CircuitBreaker
-	cbCV        *gobreaker.CircuitBreaker
-	cbRouting   *gobreaker.CircuitBreaker
-	cbAnomaly   *gobreaker.CircuitBreaker
+	cbDemand  *gobreaker.CircuitBreaker
+	cbSafety  *gobreaker.CircuitBreaker
+	cbCV      *gobreaker.CircuitBreaker
+	cbRouting *gobreaker.CircuitBreaker
+	cbAnomaly *gobreaker.CircuitBreaker
 }
 
 // NewMLClient constructs an MLClient. Mock flags can be overridden by

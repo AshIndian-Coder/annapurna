@@ -20,12 +20,12 @@ type Config struct {
 	RedisURL    string
 
 	// ── JWT access token ──────────────────────────────────────────────────────
-	JWTSecret      string
-	JWTExpireMin   int
+	JWTSecret    string
+	JWTExpireMin int
 
 	// ── JWT refresh token ─────────────────────────────────────────────────────
-	RefreshSecret      string
-	RefreshExpireDays  int
+	RefreshSecret     string
+	RefreshExpireDays int
 
 	// ── CORS ──────────────────────────────────────────────────────────────────
 	AllowedOrigins []string
@@ -39,6 +39,7 @@ type Config struct {
 
 	// ── File upload ───────────────────────────────────────────────────────────
 	MaxUploadMB int64
+	UploadsDir  string
 
 	// ── Carbon accounting ─────────────────────────────────────────────────────
 	CarbonFactorKgCO2ePerKg float64
@@ -99,6 +100,7 @@ func Load() *Config {
 
 	// ── File uploads ──────────────────────────────────────────────────────────
 	cfg.MaxUploadMB = int64(requireInt("MAX_UPLOAD_MB"))
+	cfg.UploadsDir = optionalStr("UPLOADS_DIR", "storage/uploads")
 
 	// ── Carbon factor ─────────────────────────────────────────────────────────
 	cfg.CarbonFactorKgCO2ePerKg = requireFloat("CARBON_FACTOR_KG_CO2E_PER_KG")

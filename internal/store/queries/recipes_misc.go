@@ -44,13 +44,13 @@ type Attendance struct {
 
 // Production mirrors the production table.
 type Production struct {
-	ID           uuid.UUID
-	KitchenID    uuid.UUID
-	MealID       uuid.UUID
+	ID             uuid.UUID
+	KitchenID      uuid.UUID
+	MealID         uuid.UUID
 	ProductionDate time.Time
-	QuantityKg   float64
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	QuantityKg     float64
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
 }
 
 // Recipient holds basic info for an NGO/recipient.
@@ -102,37 +102,37 @@ type ProcessingMetrics struct {
 
 // Alert mirrors the alerts table.
 type Alert struct {
-	ID          uuid.UUID
-	KitchenID   uuid.UUID
-	AlertType   string
-	Severity    string // info | warning | critical
-	Message     string
-	IsAcked     bool
-	AckedBy     *uuid.UUID
-	AckedAt     *time.Time
-	CreatedAt   time.Time
+	ID        uuid.UUID
+	KitchenID uuid.UUID
+	AlertType string
+	Severity  string // info | warning | critical
+	Message   string
+	IsAcked   bool
+	AckedBy   *uuid.UUID
+	AckedAt   *time.Time
+	CreatedAt time.Time
 }
 
 // AuditLog mirrors the audit_logs table.
 type AuditLog struct {
-	ID         uuid.UUID
-	ActorID    uuid.UUID
-	Action     string
+	ID           uuid.UUID
+	ActorID      uuid.UUID
+	Action       string
 	ResourceType string
-	ResourceID uuid.UUID
-	Metadata   map[string]any
-	CreatedAt  time.Time
+	ResourceID   uuid.UUID
+	Metadata     map[string]any
+	CreatedAt    time.Time
 }
 
 // Diversion mirrors the diversions table.
 type Diversion struct {
-	ID          uuid.UUID
-	BatchID     uuid.UUID
-	FromStatus  string
-	ToStatus    string
-	Reason      string
-	ActorID     uuid.UUID
-	CreatedAt   time.Time
+	ID         uuid.UUID
+	BatchID    uuid.UUID
+	FromStatus string
+	ToStatus   string
+	Reason     string
+	ActorID    uuid.UUID
+	CreatedAt  time.Time
 }
 
 // SensorReading mirrors the sensor_readings table.
