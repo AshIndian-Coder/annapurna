@@ -19,7 +19,7 @@ The core API workflows have been evaluated against live PostgreSQL and Redis ins
 | **3** | Kitchen Authentication | `POST /api/v1/auth/login` | HTTP 200, Signed JWT token | JWT access token received | **PASS ✅** |
 | **4** | User Identity Profile | `GET /api/v1/auth/me` | HTTP 200, Role=KITCHEN | User: `kitchen@example.com`, Role: `KITCHEN` | **PASS ✅** |
 | **5** | Log Surplus Food Batch | `POST /api/v1/surplus` | HTTP 201, Status=PENDING_SAFETY | Batch created with `PENDING_SAFETY` | **PASS ✅** |
-| **6** | Food Quality Check (Multipart) | `POST /api/v1/quality/check` | HTTP 200 with valid JPEG/PNG | Visual: `GOOD`, Check stored in DB | **PASS ✅** |
+| **6** | Food Quality Check (Multipart) | `POST /api/v1/quality/check` | HTTP 200 with valid JPEG/PNG | Visual: `GOOD`, Check stored in DB | **FAIL** |
 | **7** | Human Inspection Approval | `POST /api/v1/surplus/{id}/approve` | HTTP 200, Status=AVAILABLE | Batch transitioned to `AVAILABLE` with SHA-256 hash | **PASS ✅** |
 | **8** | Secondary Food Diversion | `POST /api/v1/surplus/{id}/divert` | HTTP 200, Status=DIVERTED | Batch transitioned to `DIVERTED` | **PASS ✅** |
 | **9** | Multi-Tenant Surplus List | `GET /api/v1/surplus` | HTTP 200, Array of batches | Returns active batches for kitchen | **PASS ✅** |
