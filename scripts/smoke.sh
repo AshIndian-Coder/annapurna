@@ -73,6 +73,30 @@ check "unauthenticated /surplus → 401" "$code" "401"
 read -r code _ <<<"$(req POST "$API/auth/login" "" '{"email":"kitchen@example.com","password":"wrong-password"}')"
 check "bad password → 401" "$code" "401"
 
+# ─── 1b. rotating refresh tokens (D22) ───────────────────────────────────────
+read -r code body <<<"$(req POST "$API/auth/login" "" "{\"email\":\"$EMAIL\",\"password\":\"$PASSWORD\"}")"
+REFRESH1="$(jget refresh_token <"$body")"
+[ -n "$REFRESH1" ] && c_ok "refresh token issued on login" || c_bad "no refresh token on login"
+
+read -r code body <<<"$(req POST "$API/auth/refresh" "" "{\"refresh_token\":\"$REFRESH1\"}")"
+check "POST /auth/refresh → 200" "$code" "200"
+REFRESH2="$(jget refresh_token <"$body")"
+ACCESS2="$(jget access_token <"$body")"
+[ -n "$REFRESH2" ] && [ "$REFRESH2" != "$REFRESH1" ] && c_ok "refresh token rotated" || c_bad "refresh token was not rotated"
+
+read -r code body <<<"$(req GET "$API/auth/me" "$ACCESS2")"
+check "rotated access token is a real user" "$(jget role <"$body")" "KITCHEN"
+check "rotated token subject is the login user" "$(jget email <"$body")" "$EMAIL"
+
+read -r code body <<<"$(req POST "$API/auth/refresh" "" "{\"refresh_token\":\"$REFRESH1\"}")"
+check "replaying a rotated token → 401" "$code" "401"
+check "code REFRESH_TOKEN_REUSED" "$(jget code <"$body")" "REFRESH_TOKEN_REUSED"
+
+read -r code _ <<<"$(req POST "$API/auth/logout" "" "{\"refresh_token\":\"$REFRESH2\"}")"
+check "POST /auth/logout → 204" "$code" "204"
+read -r code _ <<<"$(req POST "$API/auth/refresh" "" "{\"refresh_token\":\"$REFRESH2\"}")"
+check "refresh after logout → 401" "$code" "401"
+
 # ─── 2. surplus creation ─────────────────────────────────────────────────────
 section "2. surplus lifecycle"
 NOW_ISO="$(python3 -c 'import datetime;print(datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H:%M:%SZ"))')"
@@ -184,6 +208,17 @@ if [ -n "$REJECTED_ID" ] && [ "$REJECTED_ID" != "None" ]; then
 else
   printf '  \033[33mSKIP\033[0m no REJECTED batch in seed data\n'
 fi
+
+# ─── 5b. SSE stream ──────────────────────────────────────────────────────────
+section "5b. live event stream"
+SSE_OUT="$(curl -sS -m 3 -N "$BASE_URL$API/events/stream?token=$TOKEN" 2>/dev/null || true)"
+if printf '%s' "$SSE_OUT" | grep -q "kitchen_id.:.00000000-0000-4000-8000-000000000101"; then
+  c_ok "SSE stream is scoped to the token's kitchen"
+else
+  c_bad "SSE stream did not report the caller's kitchen"
+fi
+read -r code _ <<<"$(req GET "$API/events/stream?token=not-a-token" "")"
+check "SSE with a bad token → 401" "$code" "401"
 
 # ─── 6. offline sync replay ──────────────────────────────────────────────────
 section "6. offline sync (dedupe)"

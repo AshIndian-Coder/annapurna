@@ -1,10 +1,11 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
-	"time"
+	"strings"
 
+	"github.com/sih26234/food-waste/internal/auth"
+	"github.com/sih26234/food-waste/internal/httpapi"
 	"github.com/sih26234/food-waste/internal/sse"
 )
 
@@ -16,35 +17,46 @@ func NewEventsHandler(hub *sse.Hub) *EventsHandler {
 	return &EventsHandler{hub: hub}
 }
 
+// claimsForStream authenticates an SSE request. EventSource cannot set
+// headers, so the access token is accepted either in the Authorization header
+// (curl, mobile) or in the ?token= query parameter (browser EventSource).
+func claimsForStream(r *http.Request) (*auth.Claims, bool) {
+	raw := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+	if raw == "" {
+		raw = r.URL.Query().Get("token")
+	}
+	if raw == "" {
+		return nil, false
+	}
+	claims, err := auth.VerifyAccessToken(raw)
+	if err != nil {
+		return nil, false
+	}
+	return claims, true
+}
+
+// Stream handles GET /events/stream.
+//
+// The stream is scoped to the caller's own kitchen: a KITCHEN user always
+// follows their own kitchen_id from the token (the query parameter is ignored,
+// so it cannot be spoofed), while ADMIN may name any kitchen.
 func (h *EventsHandler) Stream(w http.ResponseWriter, r *http.Request) {
-	flusher, ok := w.(http.Flusher)
+	claims, ok := claimsForStream(r)
 	if !ok {
-		http.Error(w, "Streaming unsupported", http.StatusInternalServerError)
+		httpapi.NewUnauthorized("invalid or expired token").Render(w)
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("Connection", "keep-alive")
-
-	kitchenID := r.URL.Query().Get("kitchen_id")
-	if kitchenID == "" {
-		kitchenID = "default"
-	}
-
-	ticker := time.NewTicker(15 * time.Second)
-	defer ticker.Stop()
-
-	fmt.Fprintf(w, "event: connected\ndata: {\"status\":\"connected\",\"kitchen_id\":\"%s\"}\n\n", kitchenID)
-	flusher.Flush()
-
-	for {
-		select {
-		case <-r.Context().Done():
-			return
-		case <-ticker.C:
-			fmt.Fprintf(w, "event: ping\ndata: {\"ts\":%d}\n\n", time.Now().Unix())
-			flusher.Flush()
+	kitchenID := claims.KitchenID
+	if strings.EqualFold(claims.Role, "ADMIN") {
+		if requested := strings.TrimSpace(r.URL.Query().Get("kitchen_id")); requested != "" {
+			kitchenID = requested
 		}
 	}
+	if kitchenID == "" {
+		httpapi.NewValidation("no kitchen scope for this account", "kitchen_id").Render(w)
+		return
+	}
+
+	h.hub.StreamKitchen(w, r, kitchenID)
 }
