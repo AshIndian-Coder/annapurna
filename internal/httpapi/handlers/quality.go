@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/sih26234/food-waste/internal/httpapi"
+	mw "github.com/sih26234/food-waste/internal/httpapi/middleware"
 	"github.com/sih26234/food-waste/internal/services"
 )
 
@@ -18,6 +19,12 @@ func NewQualityHandler(q *services.QualityService) *QualityHandler {
 }
 
 func (h *QualityHandler) Check(w http.ResponseWriter, r *http.Request) {
+	claims := mw.ClaimsFromCtx(r.Context())
+	if claims == nil || claims.Subject == "" {
+		httpapi.NewUnauthorized("unauthorized").Render(w)
+		return
+	}
+
 	if err := r.ParseMultipartForm(8 << 20); err != nil {
 		httpapi.NewValidation("failed to parse form", err.Error()).Render(w)
 		return
@@ -42,7 +49,7 @@ func (h *QualityHandler) Check(w http.ResponseWriter, r *http.Request) {
 		preview = &raw
 	}
 
-	res, err := h.quality.CheckQuality(r.Context(), batchID, "user-1", "/storage/uploads/temp.jpg", tempC, preview)
+	res, err := h.quality.CheckQuality(r.Context(), batchID, claims.Subject, "/storage/uploads/"+batchID+".jpg", tempC, preview)
 	if err != nil {
 		httpapi.NewInternal(err.Error()).Render(w)
 		return

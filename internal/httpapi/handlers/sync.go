@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/sih26234/food-waste/internal/httpapi"
+	mw "github.com/sih26234/food-waste/internal/httpapi/middleware"
 	"github.com/sih26234/food-waste/internal/services"
 )
 
@@ -17,6 +18,12 @@ func NewSyncHandler(s *services.SyncService) *SyncHandler {
 }
 
 func (h *SyncHandler) Batch(w http.ResponseWriter, r *http.Request) {
+	claims := mw.ClaimsFromCtx(r.Context())
+	if claims == nil || claims.Subject == "" {
+		httpapi.NewUnauthorized("unauthorized").Render(w)
+		return
+	}
+
 	var req struct {
 		Items []services.SyncItem `json:"items"`
 	}
@@ -25,7 +32,7 @@ func (h *SyncHandler) Batch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.sync.ProcessBatch(r.Context(), "user-1", "KITCHEN", "kitchen-1", req.Items)
+	result, err := h.sync.ProcessBatch(r.Context(), claims.Subject, claims.Role, claims.KitchenID, req.Items)
 	if err != nil {
 		httpapi.NewInternal(err.Error()).Render(w)
 		return

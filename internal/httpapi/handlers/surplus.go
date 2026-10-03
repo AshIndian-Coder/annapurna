@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/sih26234/food-waste/internal/httpapi"
+	mw "github.com/sih26234/food-waste/internal/httpapi/middleware"
 	"github.com/sih26234/food-waste/internal/services"
 )
 
@@ -19,12 +20,23 @@ func NewSurplusHandler(s *services.SurplusService, a *services.ApproveService) *
 }
 
 func (h *SurplusHandler) Create(w http.ResponseWriter, r *http.Request) {
+	claims := mw.ClaimsFromCtx(r.Context())
+	if claims == nil || claims.Subject == "" {
+		httpapi.NewUnauthorized("unauthorized").Render(w)
+		return
+	}
+	kitchenID := claims.KitchenID
+	if kitchenID == "" {
+		httpapi.NewForbidden("user not associated with any kitchen").Render(w)
+		return
+	}
+
 	var req services.CreateSurplusRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httpapi.NewValidation("invalid request", err.Error()).Render(w)
 		return
 	}
-	batch, err := h.surplus.CreateSurplus(r.Context(), "kitchen-1", "user-1", req)
+	batch, err := h.surplus.CreateSurplus(r.Context(), kitchenID, claims.Subject, req)
 	if err != nil {
 		httpapi.NewInternal(err.Error()).Render(w)
 		return
@@ -35,7 +47,31 @@ func (h *SurplusHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *SurplusHandler) List(w http.ResponseWriter, r *http.Request) {
-	result, err := h.surplus.ListSurplus(r.Context(), services.ListSurplusParams{Limit: 20})
+	claims := mw.ClaimsFromCtx(r.Context())
+	kitchenID := ""
+	if claims != nil && claims.Role == "KITCHEN" {
+		kitchenID = claims.KitchenID
+	}
+
+	statusParam := r.URL.Query().Get("status")
+	var status *services.SurplusStatus
+	if statusParam != "" {
+		st := services.SurplusStatus(statusParam)
+		status = &st
+	}
+
+	cursor := r.URL.Query().Get("cursor")
+	var cursorPtr *string
+	if cursor != "" {
+		cursorPtr = &cursor
+	}
+
+	result, err := h.surplus.ListSurplus(r.Context(), services.ListSurplusParams{
+		KitchenID: kitchenID,
+		Status:    status,
+		Cursor:    cursorPtr,
+		Limit:     20,
+	})
 	if err != nil {
 		httpapi.NewInternal(err.Error()).Render(w)
 		return
@@ -57,12 +93,18 @@ func (h *SurplusHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 func (h *SurplusHandler) Approve(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
+	claims := mw.ClaimsFromCtx(r.Context())
+	if claims == nil || claims.Subject == "" {
+		httpapi.NewUnauthorized("unauthorized").Render(w)
+		return
+	}
+
 	var req services.ApproveRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		httpapi.NewValidation("invalid request", err.Error()).Render(w)
 		return
 	}
-	err := h.approve.Approve(r.Context(), id, "user-1", "KITCHEN", req)
+	err := h.approve.Approve(r.Context(), id, claims.Subject, claims.Role, req)
 	if err != nil {
 		httpapi.NewConflict("APPROVE_FAILED", err.Error()).Render(w)
 		return

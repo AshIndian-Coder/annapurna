@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"sort"
 	"time"
 
 	"github.com/google/uuid"
@@ -47,6 +48,20 @@ func NewMatchingService(pool *pgxpool.Pool, chain *qrchain.Service, push *pushx.
 	return &MatchingService{pool: pool, qrchain: chain, push: push}
 }
 
+func haversine(lat1, lon1, lat2, lon2 float64) float64 {
+	const R = 6371.0 // Earth radius in km
+	dLat := (lat2 - lat1) * (math.Pi / 180.0)
+	dLon := (lon2 - lon1) * (math.Pi / 180.0)
+
+	rLat1 := lat1 * (math.Pi / 180.0)
+	rLat2 := lat2 * (math.Pi / 180.0)
+
+	a := math.Sin(dLat/2)*math.Sin(dLat/2) +
+		math.Cos(rLat1)*math.Cos(rLat2)*math.Sin(dLon/2)*math.Sin(dLon/2)
+	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+	return R * c
+}
+
 func (s *MatchingService) Match(ctx context.Context, batchID string, maxResults int, kitchenID string) ([]MatchResult, error) {
 	if maxResults <= 0 {
 		maxResults = 5
@@ -54,16 +69,29 @@ func (s *MatchingService) Match(ctx context.Context, batchID string, maxResults 
 
 	var batchQty float64
 	var batchCat string
-	var batchExpiry time.Time
+	var batchExpiry, batchPrepared time.Time
+	var batchKitchenID string
+
 	err := s.pool.QueryRow(ctx,
-		`SELECT quantity_kg, food_category, expiry_at FROM surplus_batches WHERE id = $1`,
-		batchID,
-	).Scan(&batchQty, &batchCat, &batchExpiry)
+		`SELECT quantity_kg, food_category, expiry_at, prepared_at, kitchen_id 
+		 FROM surplus_batches WHERE id = $1`, batchID,
+	).Scan(&batchQty, &batchCat, &batchExpiry, &batchPrepared, &batchKitchenID)
+
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, &NotFoundError{Resource: "surplus_batch", ID: batchID}
 		}
 		return nil, fmt.Errorf("fetch batch: %w", err)
+	}
+
+	if kitchenID == "" {
+		kitchenID = batchKitchenID
+	}
+
+	var kLat, kLng float64
+	err = s.pool.QueryRow(ctx, `SELECT latitude, longitude FROM kitchens WHERE id = $1`, kitchenID).Scan(&kLat, &kLng)
+	if err != nil {
+		kLat, kLng = 28.6139, 77.2090
 	}
 
 	rows, err := s.pool.Query(ctx,
@@ -77,6 +105,8 @@ func (s *MatchingService) Match(ctx context.Context, batchID string, maxResults 
 	defer rows.Close()
 
 	var candidates []MatchResult
+	now := time.Now().UTC()
+
 	for rows.Next() {
 		var id, name, rType, winStart, winEnd string
 		var capKg, lat, lng float64
@@ -87,23 +117,88 @@ func (s *MatchingService) Match(ctx context.Context, batchID string, maxResults 
 			continue
 		}
 
+		if len(categories) > 0 {
+			categoryMatch := false
+			for _, cat := range categories {
+				if cat == batchCat || cat == "ALL" {
+					categoryMatch = true
+					break
+				}
+			}
+			if !categoryMatch {
+				continue
+			}
+		}
+
 		if capKg < math.Min(batchQty, 5.0) {
 			continue
 		}
 
-		distKm := 3.5
-		bd := ScoreBreakdown{
-			Need:           16.0,
-			Capacity:       18.0,
-			Distance:       22.0,
-			WindowOverlap:  14.0,
-			ShelfLifeSlack: 9.0,
-			Fairness:       10.0,
+		distKm := haversine(kLat, kLng, lat, lng)
+		if math.IsNaN(distKm) || distKm < 0 {
+			distKm = 1.0
 		}
+
+		needScore := 20.0
+		if rType == "FOOD_BANK" || rType == "SHELTER" {
+			needScore = 20.0
+		} else if rType == "COMMUNITY_KITCHEN" {
+			needScore = 16.0
+		} else {
+			needScore = 12.0
+		}
+
+		capRatio := capKg / math.Max(batchQty, 1.0)
+		if capRatio > 1.0 {
+			capRatio = 1.0
+		}
+		capScore := capRatio * 20.0
+
+		distScore := 25.0 * math.Exp(-0.1*distKm)
+		if distScore > 25.0 {
+			distScore = 25.0
+		}
+
+		winScore := 15.0
+
+		shelfSlackMinutes := batchExpiry.Sub(now).Minutes()
+		shelfScore := 10.0
+		if shelfSlackMinutes < 60 {
+			shelfScore = 2.0
+		} else if shelfSlackMinutes < 180 {
+			shelfScore = 6.0
+		}
+
+		fairnessScore := 10.0
 		if lastRecv != nil && time.Since(*lastRecv) < 48*time.Hour {
-			bd.Fairness = 2.0
+			hoursSince := time.Since(*lastRecv).Hours()
+			fairnessScore = (hoursSince / 48.0) * 10.0
 		}
-		totalScore := bd.Need + bd.Capacity + bd.Distance + bd.WindowOverlap + bd.ShelfLifeSlack + bd.Fairness
+
+		totalScore := math.Round((needScore+capScore+distScore+winScore+shelfScore+fairnessScore)*10) / 10
+
+		reasons := []string{}
+		if distKm <= 5.0 {
+			reasons = append(reasons, fmt.Sprintf("Nearby (%.1f km)", distKm))
+		}
+		if capRatio >= 0.8 {
+			reasons = append(reasons, "High capacity match")
+		}
+		if fairnessScore >= 8.0 {
+			reasons = append(reasons, "Distribution fairness priority")
+		}
+		if len(reasons) == 0 {
+			reasons = append(reasons, "Eligible recipient")
+		}
+
+		bd := ScoreBreakdown{
+			Need:           math.Round(needScore*10) / 10,
+			Capacity:       math.Round(capScore*10) / 10,
+			Distance:       math.Round(distScore*10) / 10,
+			WindowOverlap:  math.Round(winScore*10) / 10,
+			ShelfLifeSlack: math.Round(shelfScore*10) / 10,
+			Fairness:       math.Round(fairnessScore*10) / 10,
+		}
 
 		candidates = append(candidates, MatchResult{
 			MatchID:        uuid.NewString(),
@@ -111,16 +206,20 @@ func (s *MatchingService) Match(ctx context.Context, batchID string, maxResults 
 			RecipientName:  name,
 			Type:           rType,
 			CapacityKg:     capKg,
-			DistanceKm:     distKm,
+			DistanceKm:     math.Round(distKm*10) / 10,
 			PickupWindow:   fmt.Sprintf("%s-%s", winStart, winEnd),
 			Score:          totalScore,
 			ScoreBreakdown: bd,
-			Reasons:        []string{"Close proximity", "Sufficient capacity", "Category match"},
+			Reasons:        reasons,
 		})
+	}
 
-		if len(candidates) >= maxResults {
-			break
-		}
+	sort.Slice(candidates, func(i, j int) bool {
+		return candidates[i].Score > candidates[j].Score
+	})
+
+	if len(candidates) > maxResults {
+		candidates = candidates[:maxResults]
 	}
 
 	for _, c := range candidates {
@@ -171,6 +270,12 @@ func (s *MatchingService) Respond(ctx context.Context, matchID, decision string)
 		if err != nil {
 			return fmt.Errorf("set batch matched: %w", err)
 		}
+
+		_, _ = tx.Exec(ctx,
+			`UPDATE matches SET status = 'EXPIRED', responded_at = $1 
+			 WHERE batch_id = $2 AND id != $3 AND status = 'OFFERED'`,
+			now, batchID, matchID,
+		)
 	}
 
 	return tx.Commit(ctx)
