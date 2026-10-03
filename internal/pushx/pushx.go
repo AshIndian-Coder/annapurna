@@ -16,7 +16,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/api/option"
 
-	"github.com/sih26234/backend/internal/asynqx"
+	"github.com/sih26234/food-waste/internal/asynqx"
 )
 
 var (

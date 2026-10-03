@@ -2,16 +2,15 @@ package services
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
-
-	"github.com/sih26234/backend/internal/models"
 )
 
 const (
@@ -26,6 +25,7 @@ const (
 type SensorReading struct {
 	SensorID  string            `json:"sensor_id"`
 	KitchenID string            `json:"kitchen_id"`
+	BatchID   string            `json:"batch_id,omitempty"`
 	Timestamp time.Time         `json:"timestamp"`
 	Temp      *float64          `json:"temperature_c,omitempty"`
 	Humidity  *float64          `json:"humidity_pct,omitempty"`
@@ -35,16 +35,16 @@ type SensorReading struct {
 
 // SensorService manages sensor data ingestion and retrieval.
 type SensorService struct {
-	db           *sql.DB
+	pool         *pgxpool.Pool
 	rdb          *redis.Client
 	alertService *AlertService
 	log          *zap.Logger
 }
 
 // NewSensorService constructs a SensorService.
-func NewSensorService(db *sql.DB, rdb *redis.Client, alerts *AlertService, log *zap.Logger) *SensorService {
+func NewSensorService(pool *pgxpool.Pool, rdb *redis.Client, alerts *AlertService, log *zap.Logger) *SensorService {
 	return &SensorService{
-		db:           db,
+		pool:         pool,
 		rdb:          rdb,
 		alertService: alerts,
 		log:          log,
@@ -52,8 +52,6 @@ func NewSensorService(db *sql.DB, rdb *redis.Client, alerts *AlertService, log *
 }
 
 // Ingest validates and persists a batch of sensor readings.
-// Stale readings (>24h) are rejected. Valid ones are streamed to Redis,
-// their latest snapshot is stored in a hash, and kitchen channel is published.
 func (s *SensorService) Ingest(ctx context.Context, readings []SensorReading) error {
 	var firstErr error
 	validCount := 0
@@ -68,13 +66,39 @@ func (s *SensorService) Ingest(ctx context.Context, readings []SensorReading) er
 		}
 		validCount++
 
-		if err := s.xaddStream(ctx, r); err != nil {
-			s.log.Error("XADD failed", zap.String("sensor_id", r.SensorID), zap.Error(err))
+		// 1. Insert into PostgreSQL sensor_readings table
+		var kUUID, bUUID *uuid.UUID
+		if r.KitchenID != "" {
+			if id, err := uuid.Parse(r.KitchenID); err == nil {
+				kUUID = &id
+			}
 		}
-		if err := s.hsetLatest(ctx, r); err != nil {
-			s.log.Error("HSET latest failed", zap.String("sensor_id", r.SensorID), zap.Error(err))
+		if r.BatchID != "" {
+			if id, err := uuid.Parse(r.BatchID); err == nil {
+				bUUID = &id
+			}
 		}
-		s.publishKitchen(ctx, r)
+
+		_, err := s.pool.Exec(ctx, `
+			INSERT INTO sensor_readings (sensor_id, kitchen_id, batch_id, temperature_c, humidity_pct, energy_kwh, recorded_at, created_at)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
+			r.SensorID, kUUID, bUUID, r.Temp, r.Humidity, r.EnergyKWh, r.Timestamp,
+		)
+		if err != nil {
+			s.log.Error("failed to persist sensor reading to postgres", zap.Error(err))
+		}
+
+		// 2. Redis updates
+		if s.rdb != nil {
+			if err := s.xaddStream(ctx, r); err != nil {
+				s.log.Error("XADD failed", zap.String("sensor_id", r.SensorID), zap.Error(err))
+			}
+			if err := s.hsetLatest(ctx, r); err != nil {
+				s.log.Error("HSET latest failed", zap.String("sensor_id", r.SensorID), zap.Error(err))
+			}
+			s.publishKitchen(ctx, r)
+		}
+
 		s.evaluateThresholds(ctx, r)
 	}
 
@@ -84,7 +108,6 @@ func (s *SensorService) Ingest(ctx context.Context, readings []SensorReading) er
 	return nil
 }
 
-// validateReading checks value ranges and staleness.
 func (s *SensorService) validateReading(r SensorReading) error {
 	if r.SensorID == "" {
 		return fmt.Errorf("sensor_id is required")
@@ -107,7 +130,6 @@ func (s *SensorService) validateReading(r SensorReading) error {
 	return nil
 }
 
-// xaddStream appends the reading to stream:sensor.
 func (s *SensorService) xaddStream(ctx context.Context, r SensorReading) error {
 	fields := map[string]interface{}{
 		"sensor_id":  r.SensorID,
@@ -129,7 +151,6 @@ func (s *SensorService) xaddStream(ctx context.Context, r SensorReading) error {
 	}).Err()
 }
 
-// hsetLatest updates sensor:latest hash with the most recent JSON reading.
 func (s *SensorService) hsetLatest(ctx context.Context, r SensorReading) error {
 	raw, err := json.Marshal(r)
 	if err != nil {
@@ -138,7 +159,6 @@ func (s *SensorService) hsetLatest(ctx context.Context, r SensorReading) error {
 	return s.rdb.HSet(ctx, sensorLatestKey, r.SensorID, raw).Err()
 }
 
-// publishKitchen broadcasts the reading to chan:kitchen:<kitchenID>.
 func (s *SensorService) publishKitchen(ctx context.Context, r SensorReading) {
 	raw, err := json.Marshal(r)
 	if err != nil {
@@ -151,15 +171,19 @@ func (s *SensorService) publishKitchen(ctx context.Context, r SensorReading) {
 	}
 }
 
-// evaluateThresholds checks values against threshold rules and creates deduplicated alerts.
 func (s *SensorService) evaluateThresholds(ctx context.Context, r SensorReading) {
+	if s.alertService == nil {
+		return
+	}
+
 	type rule struct {
-		field  string
-		value  float64
-		warnLo *float64
-		warnHi *float64
-		critLo *float64
-		critHi *float64
+		field     string
+		alertType string
+		value     float64
+		warnLo    *float64
+		warnHi    *float64
+		critLo    *float64
+		critHi    *float64
 	}
 
 	fp := func(v float64) *float64 { return &v }
@@ -167,28 +191,31 @@ func (s *SensorService) evaluateThresholds(ctx context.Context, r SensorReading)
 	var rules []rule
 	if r.Temp != nil {
 		rules = append(rules, rule{
-			field:  "temperature_c",
-			value:  *r.Temp,
-			warnLo: fp(0),
-			warnHi: fp(90),
-			critLo: fp(-10),
-			critHi: fp(110),
+			field:     "temperature_c",
+			alertType: "TEMP_EXCURSION",
+			value:     *r.Temp,
+			warnLo:    fp(0),
+			warnHi:    fp(60),
+			critLo:    fp(-10),
+			critHi:    fp(85),
 		})
 	}
 	if r.Humidity != nil {
 		rules = append(rules, rule{
-			field:  "humidity_pct",
-			value:  *r.Humidity,
-			warnHi: fp(85),
-			critHi: fp(95),
+			field:     "humidity_pct",
+			alertType: "HUMIDITY_HIGH",
+			value:     *r.Humidity,
+			warnHi:    fp(80),
+			critHi:    fp(95),
 		})
 	}
 	if r.EnergyKWh != nil {
 		rules = append(rules, rule{
-			field:  "energy_kwh",
-			value:  *r.EnergyKWh,
-			warnHi: fp(500),
-			critHi: fp(1000),
+			field:     "energy_kwh",
+			alertType: "ENERGY_SPIKE",
+			value:     *r.EnergyKWh,
+			warnHi:    fp(500),
+			critHi:    fp(1000),
 		})
 	}
 
@@ -208,20 +235,22 @@ func (s *SensorService) evaluateThresholds(ctx context.Context, r SensorReading)
 			continue
 		}
 
-		// Deduplicate: only one alert per sensor+field per 10 minutes.
-		dedupeKey := fmt.Sprintf("alert:dedupe:%s:%s:%s", r.KitchenID, r.SensorID, rl.field)
-		exists, _ := s.rdb.Exists(ctx, dedupeKey).Result()
-		if exists > 0 {
-			continue
+		if s.rdb != nil {
+			dedupeKey := fmt.Sprintf("alert:dedupe:%s:%s:%s", r.KitchenID, r.SensorID, rl.field)
+			exists, _ := s.rdb.Exists(ctx, dedupeKey).Result()
+			if exists > 0 {
+				continue
+			}
+			_ = s.rdb.Set(ctx, dedupeKey, "1", alertDedupeTTL).Err()
 		}
-		_ = s.rdb.Set(ctx, dedupeKey, "1", alertDedupeTTL).Err()
 
 		msg := fmt.Sprintf("Sensor %s: %s=%.2f exceeded %s threshold", r.SensorID, rl.field, rl.value, severity)
-		_, err := s.alertService.Create(ctx, models.CreateAlertRequest{
+		_, err := s.alertService.Create(ctx, CreateAlertReq{
 			KitchenID: r.KitchenID,
-			Source:    "sensor",
+			AlertType: rl.alertType,
 			Severity:  severity,
 			Message:   msg,
+			DedupeKey: fmt.Sprintf("%s:%s", r.SensorID, rl.field),
 		})
 		if err != nil {
 			s.log.Error("failed to create sensor alert", zap.Error(err))
@@ -229,96 +258,67 @@ func (s *SensorService) evaluateThresholds(ctx context.Context, r SensorReading)
 	}
 }
 
-// GetLatest returns the most recent reading for each sensor belonging to a kitchen.
+// GetLatest returns the most recent reading for sensors in a kitchen.
 func (s *SensorService) GetLatest(ctx context.Context, kitchenID string) ([]SensorReading, error) {
-	all, err := s.rdb.HGetAll(ctx, sensorLatestKey).Result()
+	// First check Redis
+	if s.rdb != nil {
+		all, err := s.rdb.HGetAll(ctx, sensorLatestKey).Result()
+		if err == nil && len(all) > 0 {
+			var readings []SensorReading
+			for _, raw := range all {
+				var r SensorReading
+				if err := json.Unmarshal([]byte(raw), &r); err == nil && (kitchenID == "" || r.KitchenID == kitchenID) {
+					readings = append(readings, r)
+				}
+			}
+			if len(readings) > 0 {
+				return readings, nil
+			}
+		}
+	}
+
+	// Fallback to PostgreSQL
+	query := `SELECT DISTINCT ON (sensor_id) sensor_id, COALESCE(kitchen_id::text, ''),
+	                 temperature_c, humidity_pct, energy_kwh, recorded_at
+	          FROM sensor_readings
+	          WHERE ($1 = '' OR kitchen_id::text = $1)
+	          ORDER BY sensor_id, recorded_at DESC`
+	rows, err := s.pool.Query(ctx, query, kitchenID)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
+
 	var readings []SensorReading
-	for _, raw := range all {
+	for rows.Next() {
 		var r SensorReading
-		if err := json.Unmarshal([]byte(raw), &r); err != nil {
-			continue
-		}
-		if r.KitchenID == kitchenID {
+		if err := rows.Scan(&r.SensorID, &r.KitchenID, &r.Temp, &r.Humidity, &r.EnergyKWh, &r.Timestamp); err == nil {
 			readings = append(readings, r)
 		}
 	}
 	return readings, nil
 }
 
-// GetHistory retrieves sensor readings from the stream for the given kitchen in the time window.
-func (s *SensorService) GetHistory(ctx context.Context, kitchenID string, from, to time.Time) ([]SensorReading, error) {
-	entries, err := s.rdb.XRange(ctx, sensorStreamKey,
-		strconv.FormatInt(from.UnixMilli(), 10)+"-0",
-		strconv.FormatInt(to.UnixMilli(), 10)+"-0",
-	).Result()
+// GetHistory retrieves sensor readings in the time window.
+func (s *SensorService) GetHistory(ctx context.Context, kitchenID, sensorID string, from, to time.Time) ([]SensorReading, error) {
+	query := `SELECT sensor_id, COALESCE(kitchen_id::text, ''), temperature_c, humidity_pct, energy_kwh, recorded_at
+	          FROM sensor_readings
+	          WHERE recorded_at BETWEEN $1 AND $2
+	            AND ($3 = '' OR kitchen_id::text = $3)
+	            AND ($4 = '' OR sensor_id = $4)
+	          ORDER BY recorded_at ASC LIMIT 1000`
+	rows, err := s.pool.Query(ctx, query, from, to, kitchenID, sensorID)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var readings []SensorReading
-	for _, e := range entries {
-		r := SensorReading{Extra: map[string]string{}}
-		if v, ok := e.Values["sensor_id"]; ok {
-			r.SensorID = fmt.Sprintf("%v", v)
+	for rows.Next() {
+		var r SensorReading
+		if err := rows.Scan(&r.SensorID, &r.KitchenID, &r.Temp, &r.Humidity, &r.EnergyKWh, &r.Timestamp); err == nil {
+			readings = append(readings, r)
 		}
-		if v, ok := e.Values["kitchen_id"]; ok {
-			r.KitchenID = fmt.Sprintf("%v", v)
-		}
-		if r.KitchenID != kitchenID {
-			continue
-		}
-		if v, ok := e.Values["timestamp"]; ok {
-			ms, _ := strconv.ParseInt(fmt.Sprintf("%v", v), 10, 64)
-			r.Timestamp = time.UnixMilli(ms).UTC()
-		}
-		if v, ok := e.Values["temperature_c"]; ok {
-			if f, err := strconv.ParseFloat(fmt.Sprintf("%v", v), 64); err == nil {
-				r.Temp = &f
-			}
-		}
-		if v, ok := e.Values["humidity_pct"]; ok {
-			if f, err := strconv.ParseFloat(fmt.Sprintf("%v", v), 64); err == nil {
-				r.Humidity = &f
-			}
-		}
-		if v, ok := e.Values["energy_kwh"]; ok {
-			if f, err := strconv.ParseFloat(fmt.Sprintf("%v", v), 64); err == nil {
-				r.EnergyKWh = &f
-			}
-		}
-		readings = append(readings, r)
 	}
 	return readings, nil
-}
-
-// CheckStaleSensors is called by cron to flag sensors that have gone silent.
-func (s *SensorService) CheckStaleSensors(ctx context.Context) error {
-	all, err := s.rdb.HGetAll(ctx, sensorLatestKey).Result()
-	if err != nil {
-		return err
-	}
-	now := time.Now().UTC()
-	for sensorID, raw := range all {
-		var r SensorReading
-		if err := json.Unmarshal([]byte(raw), &r); err != nil {
-			continue
-		}
-		if now.Sub(r.Timestamp) > staleSensorAge {
-			msg := fmt.Sprintf("Sensor %s has not reported for over 24h (last: %s)", sensorID, r.Timestamp.Format(time.RFC3339))
-			_, err := s.alertService.Create(ctx, models.CreateAlertRequest{
-				KitchenID: r.KitchenID,
-				Source:    "sensor-stale",
-				Severity:  "WARN",
-				Message:   msg,
-			})
-			if err != nil {
-				s.log.Error("failed to create stale sensor alert",
-					zap.String("sensor_id", sensorID), zap.Error(err))
-			}
-		}
-	}
-	return nil
 }

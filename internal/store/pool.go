@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -55,7 +56,7 @@ func NewPool(ctx context.Context, databaseURL string) (*pgxpool.Pool, error) {
 	// AfterConnect runs once per new physical connection.  We set
 	// statement_timeout here so the restriction follows each connection
 	// independently of the application-level role used to connect.
-	cfg.AfterConnect = func(ctx context.Context, conn *pgxpool.Conn) error {
+	cfg.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
 		_, err := conn.Exec(ctx,
 			"SET statement_timeout = '"+statementTimeout+"'",
 		)

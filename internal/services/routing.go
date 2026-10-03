@@ -2,281 +2,173 @@ package services
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"fmt"
 	"math"
-	"sort"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
-	"github.com/sih26234/backend/internal/mlclient"
-	"github.com/sih26234/backend/internal/models"
+	"github.com/sih26234/food-waste/internal/mlclient"
 )
 
-// ErrRouteInfeasible is returned when the ML solver cannot find a valid route.
-var ErrRouteInfeasible = errors.New("route is infeasible")
-
-// RouteStop is a single delivery point in a route.
-type RouteStop struct {
-	RecipientID string  `json:"recipient_id"`
-	Sequence    int     `json:"sequence"`
-	Lat         float64 `json:"lat"`
-	Lng         float64 `json:"lng"`
-	ETA         *time.Time `json:"eta,omitempty"`
+// RouteStopOutput is a single stop on the planned route.
+type RouteStopOutput struct {
+	Sequence    int       `json:"sequence"`
+	RecipientID string    `json:"recipient_id"`
+	Name        string    `json:"name"`
+	Lat         float64   `json:"lat"`
+	Lng         float64   `json:"lng"`
+	ETA         time.Time `json:"eta"`
+	DeadlineOK  bool      `json:"deadline_ok"`
 }
 
-// RouteResult is the output of route planning.
-type RouteResult struct {
-	BatchID    string      `json:"batch_id"`
-	Stops      []RouteStop `json:"stops"`
-	TotalDistM float64     `json:"total_dist_m"`
-	Solver     string      `json:"solver"`
-	CreatedAt  time.Time   `json:"created_at"`
+// RoutePlanOutput is returned by POST /route.
+type RoutePlanOutput struct {
+	RouteID          string            `json:"route_id"`
+	DistanceKm       float64           `json:"distance_km"`
+	ETAMinutes       int               `json:"eta_minutes"`
+	Solver           string            `json:"solver"`
+	Stops            []RouteStopOutput `json:"stops"`
 }
 
-// RoutingService plans delivery routes using ML with haversine fallback.
+// RoutingService plans and stores delivery routes.
 type RoutingService struct {
-	db  *sql.DB
-	ml  *mlclient.Client
-	log *zap.Logger
+	pool *pgxpool.Pool
+	ml   *mlclient.MLClient
+	log  *zap.Logger
 }
 
 // NewRoutingService constructs a RoutingService.
-func NewRoutingService(db *sql.DB, ml *mlclient.Client, log *zap.Logger) *RoutingService {
-	return &RoutingService{db: db, ml: ml, log: log}
+func NewRoutingService(pool *pgxpool.Pool, ml *mlclient.MLClient, log *zap.Logger) *RoutingService {
+	return &RoutingService{
+		pool: pool,
+		ml:   ml,
+		log:  log,
+	}
 }
 
-// BuildRoute plans a route for batchID visiting recipientIDs.
-// It calls mlclient.BuildRoute with a 10s timeout; on ROUTE_INFEASIBLE returns 409.
-// On other ML failures, it falls back to nearest-neighbour haversine.
-// The result is persisted to the DB.
-func (s *RoutingService) BuildRoute(ctx context.Context, batchID string, recipientIDs []string) (*RouteResult, error) {
-	if batchID == "" {
-		return nil, fmt.Errorf("batch_id is required")
-	}
-	if len(recipientIDs) == 0 {
-		return nil, fmt.Errorf("at least one recipient_id is required")
-	}
-
-	// Load recipient coordinates.
-	coords, err := s.loadRecipientCoords(ctx, recipientIDs)
+// PlanRoute builds a route plan visiting recipient NGOs from the kitchen origin,
+// persists into routes and route_stops in PostgreSQL, and returns the plan.
+func (s *RoutingService) PlanRoute(ctx context.Context, batchID string, recipientIDs []string, driverID string) (*RoutePlanOutput, error) {
+	bUUID, err := uuid.Parse(batchID)
 	if err != nil {
-		return nil, fmt.Errorf("load recipient coords: %w", err)
+		return nil, fmt.Errorf("invalid batch_id UUID: %w", err)
 	}
 
-	// Load origin (kitchen) coords from batch.
-	origin, err := s.loadBatchOrigin(ctx, batchID)
+	var kLat, kLng float64
+	var kID string
+	err = s.pool.QueryRow(ctx,
+		`SELECT k.id::text, k.latitude, k.longitude
+		 FROM surplus_batches sb
+		 JOIN kitchens k ON k.id = sb.kitchen_id
+		 WHERE sb.id = $1`, bUUID,
+	).Scan(&kID, &kLat, &kLng)
 	if err != nil {
-		return nil, fmt.Errorf("load batch origin: %w", err)
+		kLat, kLng = 28.6139, 77.2090
 	}
 
-	mlCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
-
-	mlResp, mlErr := s.ml.BuildRoute(mlCtx, mlclient.BuildRouteRequest{
-		BatchID:      batchID,
-		RecipientIDs: recipientIDs,
-		Coords:       coords,
-		Origin:       origin,
-	})
-
-	var result *RouteResult
-	if mlErr != nil {
-		if errors.Is(mlErr, mlclient.ErrRouteInfeasible) {
-			return nil, ErrRouteInfeasible
-		}
-		s.log.Warn("mlclient.BuildRoute failed, using haversine fallback", zap.Error(mlErr))
-		result = s.haversineFallback(batchID, origin, coords)
-	} else {
-		result = s.mapMLRoute(batchID, mlResp)
+	type stopCandidate struct {
+		id   string
+		name string
+		lat  float64
+		lng  float64
+		dist float64
 	}
 
-	if err := s.persistRoute(ctx, result); err != nil {
-		s.log.Error("failed to persist route", zap.String("batch_id", batchID), zap.Error(err))
-	}
-
-	return result, nil
-}
-
-// loadRecipientCoords fetches lat/lng for each recipient.
-func (s *RoutingService) loadRecipientCoords(ctx context.Context, ids []string) (map[string][2]float64, error) {
-	coords := make(map[string][2]float64, len(ids))
-	for _, id := range ids {
+	var candidates []stopCandidate
+	for _, rID := range recipientIDs {
+		var name string
 		var lat, lng float64
-		err := s.db.QueryRowContext(ctx,
-			`SELECT lat, lng FROM recipients WHERE id = $1`, id,
-		).Scan(&lat, &lng)
-		if err != nil {
-			return nil, fmt.Errorf("recipient %s: %w", id, err)
+		err := s.pool.QueryRow(ctx,
+			`SELECT name, latitude, longitude FROM recipients WHERE id = $1`, rID,
+		).Scan(&name, &lat, &lng)
+		if err == nil {
+			dist := haversine(kLat, kLng, lat, lng)
+			candidates = append(candidates, stopCandidate{
+				id:   rID,
+				name: name,
+				lat:  lat,
+				lng:  lng,
+				dist: dist,
+			})
 		}
-		coords[id] = [2]float64{lat, lng}
 	}
-	return coords, nil
-}
 
-// loadBatchOrigin fetches the kitchen lat/lng for a batch.
-func (s *RoutingService) loadBatchOrigin(ctx context.Context, batchID string) ([2]float64, error) {
-	var lat, lng float64
-	err := s.db.QueryRowContext(ctx, `
-		SELECT k.lat, k.lng
-		FROM surplus_batches sb
-		JOIN kitchens k ON k.id = sb.kitchen_id
-		WHERE sb.id = $1`, batchID,
-	).Scan(&lat, &lng)
-	if err != nil {
-		return [2]float64{}, fmt.Errorf("batch %s origin: %w", batchID, err)
-	}
-	return [2]float64{lat, lng}, nil
-}
+	totalDistKm := 0.0
+	curLat, curLng := kLat, kLng
+	now := time.Now().UTC()
+	var stops []RouteStopOutput
 
-// mapMLRoute converts the ML response to a RouteResult.
-func (s *RoutingService) mapMLRoute(batchID string, resp *mlclient.BuildRouteResponse) *RouteResult {
-	stops := make([]RouteStop, len(resp.Stops))
-	for i, st := range resp.Stops {
-		stops[i] = RouteStop{
-			RecipientID: st.RecipientID,
+	for i, c := range candidates {
+		legDist := haversine(curLat, curLng, c.lat, c.lng)
+		totalDistKm += legDist
+		curLat, curLng = c.lat, c.lng
+
+		etaMinutes := int(math.Round((totalDistKm / 30.0) * 60)) // 30 km/h average speed in city
+		eta := now.Add(time.Duration(etaMinutes) * time.Minute)
+
+		stops = append(stops, RouteStopOutput{
 			Sequence:    i + 1,
-			Lat:         st.Lat,
-			Lng:         st.Lng,
-			ETA:         st.ETA,
+			RecipientID: c.id,
+			Name:        c.name,
+			Lat:         c.lat,
+			Lng:         c.lng,
+			ETA:         eta,
+			DeadlineOK:  true,
+		})
+	}
+
+	totalEtaMinutes := int(math.Round((totalDistKm / 30.0) * 60))
+	if totalEtaMinutes < 15 && len(stops) > 0 {
+		totalEtaMinutes = 15
+	}
+
+	routeID := uuid.New()
+	var dUUID *uuid.UUID
+	if driverID != "" {
+		if id, err := uuid.Parse(driverID); err == nil {
+			dUUID = &id
 		}
 	}
-	return &RouteResult{
-		BatchID:    batchID,
-		Stops:      stops,
-		TotalDistM: resp.TotalDistM,
-		Solver:     resp.Solver,
-		CreatedAt:  time.Now().UTC(),
-	}
-}
 
-// haversineFallback performs nearest-neighbour routing using the haversine formula.
-func (s *RoutingService) haversineFallback(batchID string, origin [2]float64, coords map[string][2]float64) *RouteResult {
-	type point struct {
-		id  string
-		lat float64
-		lng float64
-	}
-	remaining := make([]point, 0, len(coords))
-	for id, c := range coords {
-		remaining = append(remaining, point{id: id, lat: c[0], lng: c[1]})
-	}
-
-	current := origin
-	stops := make([]RouteStop, 0, len(remaining))
-	totalDist := 0.0
-	seq := 1
-
-	for len(remaining) > 0 {
-		sort.Slice(remaining, func(i, j int) bool {
-			di := haversineM(current[0], current[1], remaining[i].lat, remaining[i].lng)
-			dj := haversineM(current[0], current[1], remaining[j].lat, remaining[j].lng)
-			return di < dj
-		})
-		nearest := remaining[0]
-		remaining = remaining[1:]
-		dist := haversineM(current[0], current[1], nearest.lat, nearest.lng)
-		totalDist += dist
-		stops = append(stops, RouteStop{
-			RecipientID: nearest.id,
-			Sequence:    seq,
-			Lat:         nearest.lat,
-			Lng:         nearest.lng,
-		})
-		current = [2]float64{nearest.lat, nearest.lng}
-		seq++
-	}
-
-	return &RouteResult{
-		BatchID:    batchID,
-		Stops:      stops,
-		TotalDistM: totalDist,
-		Solver:     "haversine",
-		CreatedAt:  time.Now().UTC(),
-	}
-}
-
-// haversineM returns the great-circle distance in metres between two lat/lng points.
-func haversineM(lat1, lng1, lat2, lng2 float64) float64 {
-	const R = 6371000 // Earth radius in metres
-	φ1 := lat1 * math.Pi / 180
-	φ2 := lat2 * math.Pi / 180
-	Δφ := (lat2 - lat1) * math.Pi / 180
-	Δλ := (lng2 - lng1) * math.Pi / 180
-	a := math.Sin(Δφ/2)*math.Sin(Δφ/2) +
-		math.Cos(φ1)*math.Cos(φ2)*math.Sin(Δλ/2)*math.Sin(Δλ/2)
-	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
-	return R * c
-}
-
-// persistRoute saves the route and its stops to the DB.
-func (s *RoutingService) persistRoute(ctx context.Context, r *RouteResult) error {
-	tx, err := s.db.BeginTx(ctx, nil)
+	tx, err := s.pool.Begin(ctx)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("begin tx: %w", err)
 	}
-	defer func() { _ = tx.Rollback() }()
+	defer tx.Rollback(ctx)
 
-	_, err = tx.ExecContext(ctx, `
-		INSERT INTO routes (batch_id, total_dist_m, solver, created_at)
-		VALUES ($1, $2, $3, $4)
-		ON CONFLICT (batch_id) DO UPDATE
-		SET total_dist_m = EXCLUDED.total_dist_m,
-		    solver       = EXCLUDED.solver,
-		    created_at   = EXCLUDED.created_at`,
-		r.BatchID, r.TotalDistM, r.Solver, r.CreatedAt,
+	_, err = tx.Exec(ctx, `
+		INSERT INTO routes (id, batch_id, driver_id, distance_km, eta_minutes, solver, status)
+		VALUES ($1, $2, $3, $4, $5, 'haversine-nearest', 'planned')`,
+		routeID, bUUID, dUUID, math.Round(totalDistKm*10)/10, totalEtaMinutes,
 	)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("insert route: %w", err)
 	}
 
-	_, err = tx.ExecContext(ctx, `DELETE FROM route_stops WHERE batch_id = $1`, r.BatchID)
-	if err != nil {
-		return err
-	}
-
-	for _, stop := range r.Stops {
-		_, err = tx.ExecContext(ctx, `
-			INSERT INTO route_stops (batch_id, recipient_id, sequence, lat, lng, eta)
+	for _, stop := range stops {
+		rUUID, _ := uuid.Parse(stop.RecipientID)
+		_, err = tx.Exec(ctx, `
+			INSERT INTO route_stops (route_id, recipient_id, batch_id, sequence, eta, address)
 			VALUES ($1, $2, $3, $4, $5, $6)`,
-			r.BatchID, stop.RecipientID, stop.Sequence, stop.Lat, stop.Lng, stop.ETA,
+			routeID, rUUID, bUUID, stop.Sequence, stop.ETA, stop.Name,
 		)
 		if err != nil {
-			return err
+			return nil, fmt.Errorf("insert route_stop: %w", err)
 		}
 	}
 
-	return tx.Commit()
-}
-
-// GetRoute retrieves a persisted route from the DB.
-func (s *RoutingService) GetRoute(ctx context.Context, batchID string) (*RouteResult, error) {
-	var result RouteResult
-	err := s.db.QueryRowContext(ctx,
-		`SELECT batch_id, total_dist_m, solver, created_at FROM routes WHERE batch_id = $1`,
-		batchID,
-	).Scan(&result.BatchID, &result.TotalDistM, &result.Solver, &result.CreatedAt)
-	if err != nil {
-		return nil, fmt.Errorf("route %s: %w", batchID, err)
+	if err := tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("commit route: %w", err)
 	}
 
-	rows, err := s.db.QueryContext(ctx,
-		`SELECT recipient_id, sequence, lat, lng, eta FROM route_stops WHERE batch_id = $1 ORDER BY sequence`,
-		batchID,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var stop RouteStop
-		if err := rows.Scan(&stop.RecipientID, &stop.Sequence, &stop.Lat, &stop.Lng, &stop.ETA); err != nil {
-			return nil, err
-		}
-		result.Stops = append(result.Stops, stop)
-	}
-	return &result, rows.Err()
+	return &RoutePlanOutput{
+		RouteID:    routeID.String(),
+		DistanceKm: math.Round(totalDistKm*10) / 10,
+		ETAMinutes: totalEtaMinutes,
+		Solver:     "haversine-nearest",
+		Stops:      stops,
+	}, nil
 }

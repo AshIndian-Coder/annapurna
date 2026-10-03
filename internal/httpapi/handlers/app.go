@@ -1,22 +1,26 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/go-chi/chi/v5"
-
-	"github.com/sih26234/backend/internal/service"
+	"github.com/sih26234/food-waste/internal/httpapi"
 )
 
 // AppHandler holds dependencies for mobile app config endpoints.
 type AppHandler struct {
-	appSvc service.AppService
+	manifestPath string
 }
 
 // NewAppHandler constructs an AppHandler.
-func NewAppHandler(appSvc service.AppService) *AppHandler {
-	return &AppHandler{appSvc: appSvc}
+func NewAppHandler(manifestPath string) *AppHandler {
+	if manifestPath == "" {
+		manifestPath = "static/bundles/cv/cv-v1/manifest.json"
+	}
+	return &AppHandler{manifestPath: manifestPath}
 }
 
 // RegisterRoutes mounts app routes onto r.
@@ -25,105 +29,46 @@ func (h *AppHandler) RegisterRoutes(r chi.Router) {
 	r.Get("/app/model-bundle", h.ModelBundle)
 }
 
-// ─── Response types ───────────────────────────────────────────────────────────
-
-// FeatureFlag is one runtime feature toggle.
-type FeatureFlag struct {
-	Name    string `json:"name"`
-	Enabled bool   `json:"enabled"`
-}
-
-// AppConfigResponse is returned by GET /app/config.
-type AppConfigResponse struct {
-	MinAppVersion  string        `json:"min_app_version"`
-	ForceUpdate    bool          `json:"force_update"`
-	FeatureFlags   []FeatureFlag `json:"feature_flags"`
-	SyncIntervalS  int           `json:"sync_interval_s"`
-	OfflineEnabled bool          `json:"offline_enabled"`
-	FetchedAt      time.Time     `json:"fetched_at"`
-}
-
-// ModelBundleResponse is returned by GET /app/model-bundle.
-type ModelBundleResponse struct {
-	Version     string    `json:"version"`
-	BundleURL   string    `json:"bundle_url"`
-	Checksum    string    `json:"checksum"`
-	SizeBytes   int64     `json:"size_bytes"`
-	PublishedAt time.Time `json:"published_at"`
-}
-
-// ─── Handlers ────────────────────────────────────────────────────────────────
-
 // Config handles GET /app/config.
-//
-//	@Summary      App runtime config
-//	@Description  Return feature flags, minimum version, and sync settings for mobile clients.
-//	@Tags         app
-//	@Produce      json
-//	@Security     BearerAuth
-//	@Param        platform query string false "Client platform: android|ios"
-//	@Param        version  query string false "Current app version"
-//	@Success      200 {object} AppConfigResponse
-//	@Failure      500 {object} ErrorResponse
-//	@Router       /app/config [get]
 func (h *AppHandler) Config(w http.ResponseWriter, r *http.Request) {
-	platform := r.URL.Query().Get("platform")
-	version := r.URL.Query().Get("version")
-
-	result, err := h.appSvc.Config(r.Context(), service.AppConfigInput{
-		Platform: platform,
-		Version:  version,
-	})
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to fetch app config", err)
-		return
+	var modelBundle any
+	if data, err := os.ReadFile(h.manifestPath); err == nil {
+		_ = json.Unmarshal(data, &modelBundle)
 	}
 
-	flags := make([]FeatureFlag, len(result.FeatureFlags))
-	for i, f := range result.FeatureFlags {
-		flags[i] = FeatureFlag{Name: f.Name, Enabled: f.Enabled}
+	resp := map[string]any{
+		"min_supported_version": "1.0.0",
+		"force_update":           false,
+		"feature_flags": map[string]bool{
+			"offline_sync":        true,
+			"iot_telemetry":       true,
+			"ai_demand_forecast":  true,
+			"cv_quality_analysis": true,
+		},
+		"model_bundle": modelBundle,
+		"display": map[string]any{
+			"carbon_factor_source": "WRI/FAO 2026",
+			"danger_zone_band_c":   []int{5, 60},
+		},
+		"fetched_at": time.Now().UTC(),
 	}
 
-	writeJSON(w, http.StatusOK, AppConfigResponse{
-		MinAppVersion:  result.MinAppVersion,
-		ForceUpdate:    result.ForceUpdate,
-		FeatureFlags:   flags,
-		SyncIntervalS:  result.SyncIntervalS,
-		OfflineEnabled: result.OfflineEnabled,
-		FetchedAt:      time.Now().UTC(),
-	})
+	writeJSON(w, http.StatusOK, resp)
 }
 
 // ModelBundle handles GET /app/model-bundle.
-//
-//	@Summary      On-device ML model bundle
-//	@Description  Return download URL and metadata for the latest on-device ML model bundle.
-//	@Tags         app
-//	@Produce      json
-//	@Security     BearerAuth
-//	@Param        platform query string false "Client platform: android|ios"
-//	@Success      200 {object} ModelBundleResponse
-//	@Failure      404 {object} ErrorResponse
-//	@Failure      500 {object} ErrorResponse
-//	@Router       /app/model-bundle [get]
 func (h *AppHandler) ModelBundle(w http.ResponseWriter, r *http.Request) {
-	platform := r.URL.Query().Get("platform")
-
-	result, err := h.appSvc.ModelBundle(r.Context(), platform)
+	data, err := os.ReadFile(h.manifestPath)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to fetch model bundle", err)
-		return
-	}
-	if result == nil {
-		writeError(w, http.StatusNotFound, "no model bundle available", nil)
+		httpapi.NewNotFound("model manifest not found").Render(w)
 		return
 	}
 
-	writeJSON(w, http.StatusOK, ModelBundleResponse{
-		Version:     result.Version,
-		BundleURL:   result.BundleURL,
-		Checksum:    result.Checksum,
-		SizeBytes:   result.SizeBytes,
-		PublishedAt: result.PublishedAt,
-	})
+	var manifest map[string]any
+	if err := json.Unmarshal(data, &manifest); err != nil {
+		httpapi.NewInternal("failed to parse manifest").Render(w)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, manifest)
 }

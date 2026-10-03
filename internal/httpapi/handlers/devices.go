@@ -3,22 +3,23 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
-
-	"github.com/sih26234/backend/internal/domain"
-	"github.com/sih26234/backend/internal/service"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/sih26234/food-waste/internal/httpapi"
 )
 
 // DevicesHandler holds dependencies for device registration endpoints.
 type DevicesHandler struct {
-	deviceSvc service.DeviceService
+	pool *pgxpool.Pool
 }
 
 // NewDevicesHandler constructs a DevicesHandler.
-func NewDevicesHandler(deviceSvc service.DeviceService) *DevicesHandler {
-	return &DevicesHandler{deviceSvc: deviceSvc}
+func NewDevicesHandler(pool *pgxpool.Pool) *DevicesHandler {
+	return &DevicesHandler{pool: pool}
 }
 
 // RegisterRoutes mounts device routes onto r.
@@ -27,94 +28,90 @@ func (h *DevicesHandler) RegisterRoutes(r chi.Router) {
 	r.Delete("/devices/{id}", h.Deregister)
 }
 
-// ─── Request / Response types ────────────────────────────────────────────────
-
 // RegisterDeviceRequest is the body for POST /devices.
 type RegisterDeviceRequest struct {
-	DeviceToken string                `json:"device_token"`
-	Platform    domain.DevicePlatform `json:"platform"`
-	AppVersion  string                `json:"app_version,omitempty"`
-	KitchenID   string                `json:"kitchen_id,omitempty"`
-	UserID      string                `json:"user_id,omitempty"`
+	Token       string `json:"token"`
+	DeviceToken string `json:"device_token,omitempty"`
+	Platform    string `json:"platform"`
+	AppVersion  string `json:"app_version,omitempty"`
 }
-
-// RegisterDeviceResponse is returned by POST /devices.
-type RegisterDeviceResponse struct {
-	DeviceID    string                `json:"device_id"`
-	DeviceToken string                `json:"device_token"`
-	Platform    domain.DevicePlatform `json:"platform"`
-	RegisteredAt time.Time            `json:"registered_at"`
-}
-
-// ─── Handlers ────────────────────────────────────────────────────────────────
 
 // Register handles POST /devices.
-//
-//	@Summary      Register a device
-//	@Description  Register a mobile device for push notifications.
-//	@Tags         devices
-//	@Accept       json
-//	@Produce      json
-//	@Security     BearerAuth
-//	@Param        body body RegisterDeviceRequest true "Device registration"
-//	@Success      201 {object} RegisterDeviceResponse
-//	@Failure      400 {object} ErrorResponse
-//	@Failure      409 {object} ErrorResponse
-//	@Failure      500 {object} ErrorResponse
-//	@Router       /devices [post]
 func (h *DevicesHandler) Register(w http.ResponseWriter, r *http.Request) {
+	claims, ok := requireClaims(w, r)
+	if !ok {
+		return
+	}
+
 	var req RegisterDeviceRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid request body", err)
-		return
-	}
-	if req.DeviceToken == "" || req.Platform == "" {
-		writeError(w, http.StatusBadRequest, "device_token and platform are required", nil)
+		httpapi.NewValidation("invalid request body", err.Error()).Render(w)
 		return
 	}
 
-	result, err := h.deviceSvc.Register(r.Context(), service.RegisterDeviceInput{
-		DeviceToken: req.DeviceToken,
-		Platform:    req.Platform,
-		AppVersion:  req.AppVersion,
-		KitchenID:   req.KitchenID,
-		UserID:      req.UserID,
-	})
+	token := strings.TrimSpace(req.Token)
+	if token == "" {
+		token = strings.TrimSpace(req.DeviceToken)
+	}
+	platform := strings.ToUpper(strings.TrimSpace(req.Platform))
+
+	if token == "" || (platform != "ANDROID" && platform != "IOS") {
+		httpapi.NewValidation("token and platform ('ANDROID' or 'IOS') are required", nil).Render(w)
+		return
+	}
+
+	userUUID, err := uuid.Parse(claims.Subject)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to register device", err)
+		httpapi.NewValidation("invalid user ID", err.Error()).Render(w)
 		return
 	}
 
-	writeJSON(w, http.StatusCreated, RegisterDeviceResponse{
-		DeviceID:     result.DeviceID,
-		DeviceToken:  result.DeviceToken,
-		Platform:     result.Platform,
-		RegisteredAt: result.RegisteredAt,
+	deviceID := uuid.New()
+	query := `
+		INSERT INTO device_tokens (id, user_id, platform, token, app_version, is_valid, last_seen_at, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, true, NOW(), NOW(), NOW())
+		ON CONFLICT (token) DO UPDATE
+		SET user_id      = EXCLUDED.user_id,
+		    platform     = EXCLUDED.platform,
+		    app_version  = EXCLUDED.app_version,
+		    is_valid     = true,
+		    last_seen_at = NOW(),
+		    updated_at   = NOW()
+		RETURNING id`
+
+	err = h.pool.QueryRow(r.Context(), query,
+		deviceID, userUUID, platform, token, req.AppVersion,
+	).Scan(&deviceID)
+	if err != nil {
+		httpapi.NewInternal("failed to register device token: " + err.Error()).Render(w)
+		return
+	}
+
+	writeJSON(w, http.StatusCreated, map[string]any{
+		"device_id": deviceID.String(),
+		"active":    true,
 	})
 }
 
 // Deregister handles DELETE /devices/{id}.
-//
-//	@Summary      Deregister a device
-//	@Description  Remove a mobile device from push notification registry.
-//	@Tags         devices
-//	@Produce      json
-//	@Security     BearerAuth
-//	@Param        id path string true "Device ID"
-//	@Success      204 "No content"
-//	@Failure      404 {object} ErrorResponse
-//	@Failure      500 {object} ErrorResponse
-//	@Router       /devices/{id} [delete]
 func (h *DevicesHandler) Deregister(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	if id == "" {
-		writeError(w, http.StatusBadRequest, "device id is required", nil)
+	_, ok := requireClaims(w, r)
+	if !ok {
 		return
 	}
 
-	if err := h.deviceSvc.Deregister(r.Context(), id); err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to deregister device", err)
+	id := strings.TrimSpace(chi.URLParam(r, "id"))
+	if id == "" {
+		httpapi.NewValidation("device id is required", nil).Render(w)
 		return
+	}
+
+	dUUID, err := uuid.Parse(id)
+	if err != nil {
+		// Treat id as raw token string if not UUID
+		_, _ = h.pool.Exec(r.Context(), `UPDATE device_tokens SET is_valid = false, updated_at = NOW() WHERE token = $1`, id)
+	} else {
+		_, _ = h.pool.Exec(r.Context(), `UPDATE device_tokens SET is_valid = false, updated_at = NOW() WHERE id = $1`, dUUID)
 	}
 
 	w.WriteHeader(http.StatusNoContent)

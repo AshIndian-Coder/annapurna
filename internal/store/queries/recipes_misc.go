@@ -295,14 +295,14 @@ type UpsertOutcomeFeedbackParams struct {
 
 const getKitchenOverviewSQL = `
 SELECT
-    $1::uuid                                                          AS kitchen_id,
-    COALESCE(SUM(sb.quantity_kg) FILTER (WHERE sb.status != 'expired'), 0) AS total_surplus_kg,
-    COALESCE(SUM(wr.quantity_kg), 0)                                  AS total_waste_kg,
-    COUNT(sb.id)    FILTER (WHERE sb.status = 'available')            AS open_batches,
-    COUNT(sb.id)    FILTER (WHERE sb.status = 'matched')              AS matched_batches,
-    COUNT(sb.id)    FILTER (WHERE sb.status = 'collected')            AS collected_batches
+    $1::uuid                                                                      AS kitchen_id,
+    COALESCE(SUM(sb.quantity_kg) FILTER (WHERE upper(sb.status) NOT IN ('EXPIRED','DIVERTED')), 0) AS total_surplus_kg,
+    COALESCE(SUM(wr.quantity_kg), 0)                                              AS total_waste_kg,
+    COUNT(sb.id)    FILTER (WHERE upper(sb.status) = 'AVAILABLE')                  AS open_batches,
+    COUNT(sb.id)    FILTER (WHERE upper(sb.status) = 'MATCHED')                    AS matched_batches,
+    COUNT(sb.id)    FILTER (WHERE upper(sb.status) IN ('DELIVERED','COLLECTED'))   AS collected_batches
 FROM surplus_batches sb
-FULL OUTER JOIN waste_records wr ON wr.kitchen_id = $1
+FULL OUTER JOIN waste wr ON wr.kitchen_id = $1
 WHERE sb.kitchen_id = $1 OR wr.kitchen_id = $1`
 
 // GetKitchenOverview returns aggregated dashboard metrics for a kitchen.
@@ -689,7 +689,7 @@ func scanAlert(row pgx.Row) (Alert, error) {
 // ────────────────────────────────────────────────────────────────────────────
 
 const createAuditLogSQL = `
-INSERT INTO audit_logs
+INSERT INTO audit_log
     (id, actor_id, action, resource_type, resource_id, metadata, created_at)
 VALUES ($1, $2, $3, $4, $5, $6, NOW())`
 
@@ -739,10 +739,6 @@ const upsertSensorReadingSQL = `
 INSERT INTO sensor_readings
     (id, device_id, kitchen_id, sensor_type, value, unit, recorded_at, created_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
-ON CONFLICT (device_id, recorded_at) DO UPDATE
-    SET value      = EXCLUDED.value,
-        unit       = EXCLUDED.unit,
-        kitchen_id = EXCLUDED.kitchen_id
 RETURNING id, device_id, kitchen_id, sensor_type, value, unit, recorded_at, created_at`
 
 // UpsertSensorReading inserts or updates a sensor reading.
@@ -767,7 +763,7 @@ func UpsertSensorReading(ctx context.Context, db DBTX, p UpsertSensorReadingPara
 // ────────────────────────────────────────────────────────────────────────────
 
 const createPredictionLogSQL = `
-INSERT INTO prediction_logs
+INSERT INTO prediction_log
     (id, kitchen_id, model_version, predicted_kg, predicted_for, created_at)
 VALUES ($1, $2, $3, $4, $5, NOW())
 RETURNING id, kitchen_id, model_version, predicted_kg, actual_kg, predicted_for, created_at`

@@ -3,273 +3,227 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
-
-	"github.com/sih26234/backend/internal/domain"
-	"github.com/sih26234/backend/internal/service"
+	"github.com/sih26234/food-waste/internal/httpapi"
+	"github.com/sih26234/food-waste/internal/services"
 )
 
-// QRHandler holds dependencies for QR tracking endpoints.
+// QRHandler exposes the append-only QR hash chain (API contract rows 22–24).
 type QRHandler struct {
-	qrSvc service.QRService
+	qr *services.QRService
 }
 
-// NewQRHandler constructs a QRHandler.
-func NewQRHandler(qrSvc service.QRService) *QRHandler {
-	return &QRHandler{qrSvc: qrSvc}
+func NewQRHandler(qr *services.QRService) *QRHandler {
+	return &QRHandler{qr: qr}
 }
 
-// RegisterRoutes mounts QR routes onto r.
-func (h *QRHandler) RegisterRoutes(r chi.Router) {
-	r.Post("/qr/{batch_id}/event", h.PostEvent)
-	r.Get("/qr/{batch_id}", h.GetBatch)
-	r.Get("/qr/{batch_id}/verify", h.Verify)
-	r.Get("/qr/{batch_id}/label", h.Label)
+// eventTypes is the closed vocabulary enforced by the qr_events CHECK
+// constraint; validating here turns a 500 into a 422.
+var eventTypes = map[string]bool{
+	"CREATED":    true,
+	"APPROVED":   true,
+	"MATCHED":    true,
+	"PICKED_UP":  true,
+	"HANDED_OFF": true,
+	"RECEIVED":   true,
 }
 
-// ─── Request / Response types ────────────────────────────────────────────────
+// systemEventTypes are produced by the platform flows (create/approve/match),
+// so a human caller may not fabricate them through this endpoint.
+var systemEventTypes = map[string]bool{"CREATED": true, "APPROVED": true, "MATCHED": true}
 
-// QREventRequest is the body for POST /qr/{batch_id}/event.
-type QREventRequest struct {
-	Event     domain.QREvent `json:"event"`
-	Location  string         `json:"location,omitempty"`
-	ActorID   string         `json:"actor_id,omitempty"`
-	TempC     *float64       `json:"temp_c,omitempty"`
-	Notes     string         `json:"notes,omitempty"`
-	Timestamp *time.Time     `json:"timestamp,omitempty"`
+type recordEventRequest struct {
+	EventType     string   `json:"event_type"`
+	Lat           *float64 `json:"lat"`
+	Lng           *float64 `json:"lng"`
+	EvidenceHash  *string  `json:"evidence_hash"`
+	ClientEventID *string  `json:"client_event_id"`
+	ClientTS      *string  `json:"client_ts"`
 }
 
-// QREventResponse is returned by POST /qr/{batch_id}/event.
-type QREventResponse struct {
-	EventID   string         `json:"event_id"`
-	BatchID   string         `json:"batch_id"`
-	Event     domain.QREvent `json:"event"`
-	CreatedAt time.Time      `json:"created_at"`
-}
-
-// QRBatchResponse is returned by GET /qr/{batch_id}.
-type QRBatchResponse struct {
-	BatchID       string           `json:"batch_id"`
-	ItemName      string           `json:"item_name"`
-	QuantityKg    float64          `json:"quantity_kg"`
-	KitchenID     string           `json:"kitchen_id"`
-	Status        string           `json:"status"`
-	VisualStatus  domain.VisualStatus `json:"visual_status"`
-	SafetyDecision domain.SafetyDecision `json:"safety_decision"`
-	Events        []QREventRecord  `json:"events"`
-	CreatedAt     time.Time        `json:"created_at"`
-	ExpiresAt     *time.Time       `json:"expires_at,omitempty"`
-}
-
-// QREventRecord is one entry in a batch's event history.
-type QREventRecord struct {
-	EventID   string         `json:"event_id"`
-	Event     domain.QREvent `json:"event"`
-	Location  string         `json:"location,omitempty"`
-	ActorID   string         `json:"actor_id,omitempty"`
-	TempC     *float64       `json:"temp_c,omitempty"`
-	Notes     string         `json:"notes,omitempty"`
-	Timestamp time.Time      `json:"timestamp"`
-}
-
-// QRVerifyResponse is returned by GET /qr/{batch_id}/verify.
-type QRVerifyResponse struct {
-	BatchID  string `json:"batch_id"`
-	Valid    bool   `json:"valid"`
-	Status   string `json:"status"`
-	Message  string `json:"message"`
-}
-
-// QRLabelResponse is returned by GET /qr/{batch_id}/label.
-type QRLabelResponse struct {
-	BatchID   string `json:"batch_id"`
-	LabelURL  string `json:"label_url"`
-	QRCodeURL string `json:"qr_code_url"`
-	ItemName  string `json:"item_name"`
-	ExpiresAt string `json:"expires_at,omitempty"`
-}
-
-// ─── Handlers ────────────────────────────────────────────────────────────────
-
-// PostEvent handles POST /qr/{batch_id}/event.
+// RecordEvent handles POST /qr/{batch_id}/event.
 //
-//	@Summary      Record a QR scan event
-//	@Description  Append a lifecycle event (packed, dispatched, received, etc.) to a food batch.
-//	@Tags         qr
-//	@Accept       json
-//	@Produce      json
-//	@Security     BearerAuth
-//	@Param        batch_id path  string        true "Batch ID"
-//	@Param        body     body  QREventRequest true "QR event"
-//	@Success      201 {object} QREventResponse
-//	@Failure      400 {object} ErrorResponse
-//	@Failure      404 {object} ErrorResponse
-//	@Failure      500 {object} ErrorResponse
-//	@Router       /qr/{batch_id}/event [post]
-func (h *QRHandler) PostEvent(w http.ResponseWriter, r *http.Request) {
-	batchID := chi.URLParam(r, "batch_id")
-	if batchID == "" {
-		writeError(w, http.StatusBadRequest, "batch_id is required", nil)
+// client_event_id/client_ts are provenance only and are never hashed (D24);
+// replaying the same client_event_id returns the already-recorded event.
+func (h *QRHandler) RecordEvent(w http.ResponseWriter, r *http.Request) {
+	claims, ok := requireClaims(w, r)
+	if !ok {
 		return
 	}
 
-	var req QREventRequest
+	batchID := strings.TrimSpace(chi.URLParam(r, "batchID"))
+	if batchID == "" {
+		httpapi.NewValidation("batch_id is required", "").Render(w)
+		return
+	}
+
+	var req recordEventRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid request body", err)
+		httpapi.NewValidation("invalid request", err.Error()).Render(w)
 		return
 	}
-	if req.Event == "" {
-		writeError(w, http.StatusBadRequest, "event is required", nil)
+	req.EventType = strings.ToUpper(strings.TrimSpace(req.EventType))
+	if !eventTypes[req.EventType] {
+		httpapi.NewValidation("unknown event_type",
+			"event_type must be one of CREATED, APPROVED, MATCHED, PICKED_UP, HANDED_OFF, RECEIVED").Render(w)
 		return
 	}
-
-	result, err := h.qrSvc.PostEvent(r.Context(), service.QREventInput{
-		BatchID:   batchID,
-		Event:     req.Event,
-		Location:  req.Location,
-		ActorID:   req.ActorID,
-		TempC:     req.TempC,
-		Notes:     req.Notes,
-		Timestamp: req.Timestamp,
-	})
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to record event", err)
+	if systemEventTypes[req.EventType] && !requireRole(w, claims, "KITCHEN", "ADMIN") {
 		return
 	}
-
-	writeJSON(w, http.StatusCreated, QREventResponse{
-		EventID:   result.EventID,
-		BatchID:   result.BatchID,
-		Event:     result.Event,
-		CreatedAt: result.CreatedAt,
-	})
-}
-
-// GetBatch handles GET /qr/{batch_id}.
-//
-//	@Summary      Get batch detail
-//	@Description  Retrieve full batch info and event history for a QR-tracked food batch.
-//	@Tags         qr
-//	@Produce      json
-//	@Security     BearerAuth
-//	@Param        batch_id path string true "Batch ID"
-//	@Success      200 {object} QRBatchResponse
-//	@Failure      404 {object} ErrorResponse
-//	@Failure      500 {object} ErrorResponse
-//	@Router       /qr/{batch_id} [get]
-func (h *QRHandler) GetBatch(w http.ResponseWriter, r *http.Request) {
-	batchID := chi.URLParam(r, "batch_id")
-	if batchID == "" {
-		writeError(w, http.StatusBadRequest, "batch_id is required", nil)
+	if (req.Lat == nil) != (req.Lng == nil) {
+		httpapi.NewValidation("invalid coordinates", "lat and lng must be supplied together").Render(w)
+		return
+	}
+	if req.Lat != nil && (*req.Lat < -90 || *req.Lat > 90) {
+		httpapi.NewValidation("invalid coordinates", "lat must be between -90 and 90").Render(w)
+		return
+	}
+	if req.Lng != nil && (*req.Lng < -180 || *req.Lng > 180) {
+		httpapi.NewValidation("invalid coordinates", "lng must be between -180 and 180").Render(w)
 		return
 	}
 
-	result, err := h.qrSvc.GetBatch(r.Context(), batchID)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to retrieve batch", err)
-		return
-	}
-	if result == nil {
-		writeError(w, http.StatusNotFound, "batch not found", nil)
-		return
-	}
-
-	events := make([]QREventRecord, len(result.Events))
-	for i, ev := range result.Events {
-		events[i] = QREventRecord{
-			EventID:   ev.EventID,
-			Event:     ev.Event,
-			Location:  ev.Location,
-			ActorID:   ev.ActorID,
-			TempC:     ev.TempC,
-			Notes:     ev.Notes,
-			Timestamp: ev.Timestamp,
+	var clientTS *time.Time
+	if req.ClientTS != nil && *req.ClientTS != "" {
+		ts, err := time.Parse(time.RFC3339, *req.ClientTS)
+		if err != nil {
+			httpapi.NewValidation("invalid client_ts", "must be an RFC3339 timestamp").Render(w)
+			return
 		}
+		ts = ts.UTC()
+		clientTS = &ts
 	}
 
-	writeJSON(w, http.StatusOK, QRBatchResponse{
-		BatchID:        result.BatchID,
-		ItemName:       result.ItemName,
-		QuantityKg:     result.QuantityKg,
-		KitchenID:      result.KitchenID,
-		Status:         result.Status,
-		VisualStatus:   result.VisualStatus,
-		SafetyDecision: result.SafetyDecision,
-		Events:         events,
-		CreatedAt:      result.CreatedAt,
-		ExpiresAt:      result.ExpiresAt,
-	})
+	if _, err := h.qr.GetTimeline(r.Context(), batchID); err != nil {
+		renderServiceError(w, err)
+		return
+	}
+
+	res, err := h.qr.RecordEvent(r.Context(), batchID, claims.Subject, claims.Role, req.EventType,
+		req.Lat, req.Lng, req.EvidenceHash, req.ClientEventID, clientTS)
+	if err != nil {
+		renderServiceError(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(res)
 }
 
-// Verify handles GET /qr/{batch_id}/verify.
-//
-//	@Summary      Verify batch QR code
-//	@Description  Perform a safety and authenticity check on the QR-tagged batch.
-//	@Tags         qr
-//	@Produce      json
-//	@Security     BearerAuth
-//	@Param        batch_id path string true "Batch ID"
-//	@Success      200 {object} QRVerifyResponse
-//	@Failure      404 {object} ErrorResponse
-//	@Failure      500 {object} ErrorResponse
-//	@Router       /qr/{batch_id}/verify [get]
+type timelineEvent struct {
+	ID           string     `json:"id"`
+	EventType    string     `json:"event_type"`
+	ActorID      string     `json:"actor_id,omitempty"`
+	Lat          *float64   `json:"lat,omitempty"`
+	Lng          *float64   `json:"lng,omitempty"`
+	EvidenceHash *string    `json:"evidence_hash,omitempty"`
+	PrevHash     string     `json:"prev_hash"`
+	Hash         string     `json:"hash"`
+	ClientTS     *time.Time `json:"captured_at,omitempty"`
+	ServerTS     time.Time  `json:"server_ts"`
+	CreatedAt    time.Time  `json:"created_at"`
+}
+
+type timelineResponse struct {
+	BatchID    string          `json:"batch_id"`
+	EventCount int             `json:"event_count"`
+	ChainValid bool            `json:"chain_valid"`
+	BrokenAt   *int            `json:"broken_at,omitempty"`
+	Events     []timelineEvent `json:"events"`
+}
+
+// Get handles GET /qr/{batch_id} → the ordered timeline. client_ts is surfaced
+// as "captured_at" exactly as the contract requires.
+func (h *QRHandler) Get(w http.ResponseWriter, r *http.Request) {
+	if _, ok := requireClaims(w, r); !ok {
+		return
+	}
+
+	batchID := strings.TrimSpace(chi.URLParam(r, "batchID"))
+	events, err := h.qr.GetTimeline(r.Context(), batchID)
+	if err != nil {
+		renderServiceError(w, err)
+		return
+	}
+
+	valid, brokenAt, err := h.qr.VerifyChain(r.Context(), batchID)
+	if err != nil {
+		renderServiceError(w, err)
+		return
+	}
+
+	out := timelineResponse{
+		BatchID:    batchID,
+		EventCount: len(events),
+		ChainValid: valid,
+		BrokenAt:   brokenAt,
+		Events:     make([]timelineEvent, 0, len(events)),
+	}
+	for _, e := range events {
+		hash := e.Hash
+		if hash == "" {
+			hash = e.EventHash
+		}
+		serverTS := e.CreatedAt
+		if e.ServerTSIso != "" {
+			if ts, perr := time.Parse(time.RFC3339, e.ServerTSIso); perr == nil {
+				serverTS = ts
+			}
+		}
+		out.Events = append(out.Events, timelineEvent{
+			ID:           e.ID,
+			EventType:    e.EventType,
+			ActorID:      e.ActorID,
+			Lat:          e.Lat,
+			Lng:          e.Lng,
+			EvidenceHash: e.EvidenceHash,
+			PrevHash:     e.PrevHash,
+			Hash:         hash,
+			ClientTS:     e.ClientTS,
+			ServerTS:     serverTS,
+			CreatedAt:    e.CreatedAt,
+		})
+	}
+
+	writeJSON(w, http.StatusOK, out)
+}
+
+type verifyResponse struct {
+	BatchID    string    `json:"batch_id"`
+	Valid      bool      `json:"valid"`
+	BrokenAt   *int      `json:"broken_at,omitempty"`
+	EventCount int       `json:"event_count"`
+	VerifiedAt time.Time `json:"verified_at"`
+}
+
+// Verify handles GET /qr/{batch_id}/verify → integrity of the whole chain.
 func (h *QRHandler) Verify(w http.ResponseWriter, r *http.Request) {
-	batchID := chi.URLParam(r, "batch_id")
-	if batchID == "" {
-		writeError(w, http.StatusBadRequest, "batch_id is required", nil)
+	if _, ok := requireClaims(w, r); !ok {
 		return
 	}
 
-	result, err := h.qrSvc.Verify(r.Context(), batchID)
+	batchID := strings.TrimSpace(chi.URLParam(r, "batchID"))
+	events, err := h.qr.GetTimeline(r.Context(), batchID)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "verification failed", err)
+		renderServiceError(w, err)
 		return
 	}
-
-	writeJSON(w, http.StatusOK, QRVerifyResponse{
-		BatchID: batchID,
-		Valid:   result.Valid,
-		Status:  result.Status,
-		Message: result.Message,
-	})
-}
-
-// Label handles GET /qr/{batch_id}/label.
-//
-//	@Summary      Get printable QR label
-//	@Description  Return URLs for a printable QR code label for the food batch.
-//	@Tags         qr
-//	@Produce      json
-//	@Security     BearerAuth
-//	@Param        batch_id path string true "Batch ID"
-//	@Success      200 {object} QRLabelResponse
-//	@Failure      404 {object} ErrorResponse
-//	@Failure      500 {object} ErrorResponse
-//	@Router       /qr/{batch_id}/label [get]
-func (h *QRHandler) Label(w http.ResponseWriter, r *http.Request) {
-	batchID := chi.URLParam(r, "batch_id")
-	if batchID == "" {
-		writeError(w, http.StatusBadRequest, "batch_id is required", nil)
-		return
-	}
-
-	result, err := h.qrSvc.GetLabel(r.Context(), batchID)
+	valid, brokenAt, err := h.qr.VerifyChain(r.Context(), batchID)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to get label", err)
-		return
-	}
-	if result == nil {
-		writeError(w, http.StatusNotFound, "batch not found", nil)
+		renderServiceError(w, err)
 		return
 	}
 
-	writeJSON(w, http.StatusOK, QRLabelResponse{
-		BatchID:   result.BatchID,
-		LabelURL:  result.LabelURL,
-		QRCodeURL: result.QRCodeURL,
-		ItemName:  result.ItemName,
-		ExpiresAt: result.ExpiresAt,
+	writeJSON(w, http.StatusOK, verifyResponse{
+		BatchID:    batchID,
+		Valid:      valid,
+		BrokenAt:   brokenAt,
+		EventCount: len(events),
+		VerifiedAt: time.Now().UTC(),
 	})
 }

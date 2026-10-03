@@ -1,4 +1,4 @@
-﻿package services
+package services
 
 import (
 	"context"
@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
+	"github.com/sih26234/food-waste/internal/store/queries"
 )
 
 type SyncItem struct {
@@ -127,6 +129,84 @@ func (s *SyncService) processItem(ctx context.Context, userID, role, kitchenID s
 		}
 		base.Status = "ACCEPTED"
 		base.Body = res
+		return base
+
+	case "waste":
+		type wastePayload struct {
+			FoodType   string  `json:"food_type"`
+			ItemName   string  `json:"item_name"`
+			QuantityKg float64 `json:"quantity_kg"`
+			Cause      string  `json:"cause"`
+			WasteType  string  `json:"waste_type"`
+			Note       string  `json:"note"`
+		}
+		var wp wastePayload
+		if err := json.Unmarshal(item.Payload, &wp); err != nil {
+			base.Status = "REJECTED"
+			base.Code = "MALFORMED_PAYLOAD"
+			return base
+		}
+		ft := wp.FoodType
+		if ft == "" {
+			ft = wp.ItemName
+		}
+		var kUUID uuid.UUID
+		if kitchenID != "" {
+			kUUID, _ = uuid.Parse(kitchenID)
+		}
+		_, err := queries.CreateWaste(ctx, s.pool, queries.CreateWasteParams{
+			ID:            uuid.New(),
+			KitchenID:     kUUID,
+			FoodType:      ft,
+			QuantityKg:    wp.QuantityKg,
+			Cause:         wp.Cause,
+			WasteType:     wp.WasteType,
+			Note:          wp.Note,
+			RecordedAt:    time.Now().UTC(),
+			ClientEventID: &item.ClientEventID,
+		})
+		if err != nil {
+			base.Status = "REJECTED"
+			base.Code = "WASTE_CREATE_FAILED"
+			return base
+		}
+		base.Status = "ACCEPTED"
+		return base
+
+	case "attendance":
+		type attPayload struct {
+			Date      string `json:"date"`
+			HeadCount int    `json:"headcount"`
+		}
+		var ap attPayload
+		if err := json.Unmarshal(item.Payload, &ap); err != nil {
+			base.Status = "REJECTED"
+			base.Code = "MALFORMED_PAYLOAD"
+			return base
+		}
+		mDate := time.Now().UTC().Format("2006-01-02")
+		if ap.Date != "" {
+			mDate = ap.Date
+		}
+		var kUUID *uuid.UUID
+		if kitchenID != "" {
+			if id, err := uuid.Parse(kitchenID); err == nil {
+				kUUID = &id
+			}
+		}
+		_, err := s.pool.Exec(ctx, `
+			INSERT INTO attendance (id, kitchen_id, meal_date, head_count, created_at, updated_at)
+			VALUES ($1, $2, $3, $4, NOW(), NOW())
+			ON CONFLICT (kitchen_id, meal_date) DO UPDATE
+			SET head_count = EXCLUDED.head_count, updated_at = NOW()`,
+			uuid.New(), kUUID, mDate, ap.HeadCount,
+		)
+		if err != nil {
+			base.Status = "REJECTED"
+			base.Code = "ATTENDANCE_CREATE_FAILED"
+			return base
+		}
+		base.Status = "ACCEPTED"
 		return base
 
 	default:

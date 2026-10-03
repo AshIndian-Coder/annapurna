@@ -1,30 +1,28 @@
-﻿package services
+package services
 
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 	"github.com/sih26234/food-waste/internal/mlclient"
 )
 
 type QualityCheckResult struct {
-	ID                    string          `json:"id"`
-	BatchID               string          `json:"batch_id"`
-	VisualStatus          string          `json:"visual_status"`
-	RiskLevel             string          `json:"risk_level"`
-	Confidence            float64         `json:"confidence"`
-	Reason                string          `json:"reason"`
-	SafetyDecision        string          `json:"safety_decision"`
-	DangerZoneMinutes     float64         `json:"danger_zone_minutes"`
-	RequiresHumanApproval bool            `json:"requires_human_approval"`
-	CreatedAt             time.Time       `json:"created_at"`
+	ID                    string    `json:"id"`
+	BatchID               string    `json:"batch_id"`
+	VisualStatus          string    `json:"visual_status"`
+	RiskLevel             string    `json:"risk_level"`
+	Confidence            float64   `json:"confidence"`
+	Reason                string    `json:"reason"`
+	SafetyDecision        string    `json:"safety_decision"`
+	DangerZoneMinutes     float64   `json:"danger_zone_minutes"`
+	RequiresHumanApproval bool      `json:"requires_human_approval"`
+	CreatedAt             time.Time `json:"created_at"`
 }
 
 type QualityService struct {
@@ -61,10 +59,20 @@ func (s *QualityService) CheckQuality(
 	if s.mlclient != nil {
 		cvResp, cvErr := s.mlclient.CvPredict(cvCtx, imagePath, batchID)
 		if cvErr == nil && cvResp != nil {
-			visualStatus = cvResp.QualityStatus
-			riskLevel = cvResp.RiskLevel
+			if cvResp.FreshnessScore >= 0.7 {
+				visualStatus = "GOOD"
+				riskLevel = "LOW"
+				reason = "High freshness score"
+			} else if cvResp.FreshnessScore < 0.4 {
+				visualStatus = "REJECTED"
+				riskLevel = "HIGH"
+				reason = "Low freshness score"
+			} else {
+				visualStatus = "RISK"
+				riskLevel = "MEDIUM"
+				reason = "Moderate freshness score"
+			}
 			confidence = cvResp.Confidence
-			reason = cvResp.Reason
 		}
 	}
 

@@ -13,33 +13,43 @@ import (
 // Domain types
 // ────────────────────────────────────────────────────────────────────────────
 
-// Waste mirrors the waste_records table.
+// Waste mirrors the waste table.
 type Waste struct {
-	ID         uuid.UUID
-	KitchenID  uuid.UUID
-	FoodType   string
-	QuantityKg float64
-	WasteType  string // preparation | plate | spoilage | other
-	RecordedAt time.Time
-	CreatedAt  time.Time
+	ID            uuid.UUID
+	MealID        *uuid.UUID
+	KitchenID     uuid.UUID
+	FoodType      string
+	QuantityKg    float64
+	Cause         string
+	WasteType     string // preparation | plate | spoilage | other
+	Note          string
+	RecordedAt    time.Time
+	ClientEventID *string
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 // WasteAnalyticsRow is the result of the waste analytics aggregation query.
 type WasteAnalyticsRow struct {
 	FoodType    string
 	WasteType   string
+	Cause       string
 	TotalKg     float64
 	RecordCount int64
 }
 
 // CreateWasteParams holds insert fields.
 type CreateWasteParams struct {
-	ID         uuid.UUID
-	KitchenID  uuid.UUID
-	FoodType   string
-	QuantityKg float64
-	WasteType  string
-	RecordedAt time.Time
+	ID            uuid.UUID
+	MealID        *uuid.UUID
+	KitchenID     uuid.UUID
+	FoodType      string
+	QuantityKg    float64
+	Cause         string
+	WasteType     string
+	Note          string
+	RecordedAt    time.Time
+	ClientEventID *string
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -47,23 +57,24 @@ type CreateWasteParams struct {
 // ────────────────────────────────────────────────────────────────────────────
 
 const createWasteSQL = `
-INSERT INTO waste_records
-    (id, kitchen_id, food_type, quantity_kg, waste_type, recorded_at, created_at)
-VALUES ($1, $2, $3, $4, $5, $6, NOW())
-RETURNING id, kitchen_id, food_type, quantity_kg, waste_type, recorded_at, created_at`
+INSERT INTO waste
+    (id, meal_id, kitchen_id, food_type, quantity_kg, cause, waste_type, note, recorded_at, client_event_id, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW())
+ON CONFLICT (client_event_id) DO UPDATE SET updated_at = NOW()
+RETURNING id, meal_id, kitchen_id, COALESCE(food_type, ''), quantity_kg, COALESCE(cause, ''), COALESCE(waste_type, ''), COALESCE(note, ''), COALESCE(recorded_at, created_at), client_event_id, created_at, updated_at`
 
 // CreateWaste inserts a new waste record.
 func CreateWaste(ctx context.Context, db DBTX, p CreateWasteParams) (Waste, error) {
 	row := db.QueryRow(ctx, createWasteSQL,
-		p.ID, p.KitchenID, p.FoodType,
-		p.QuantityKg, p.WasteType, p.RecordedAt,
+		p.ID, p.MealID, p.KitchenID, p.FoodType,
+		p.QuantityKg, p.Cause, p.WasteType, p.Note, p.RecordedAt, p.ClientEventID,
 	)
 	return scanWaste(row)
 }
 
 const listWasteByKitchenSQL = `
-SELECT id, kitchen_id, food_type, quantity_kg, waste_type, recorded_at, created_at
-FROM waste_records
+SELECT id, meal_id, kitchen_id, COALESCE(food_type, ''), quantity_kg, COALESCE(cause, ''), COALESCE(waste_type, ''), COALESCE(note, ''), COALESCE(recorded_at, created_at), client_event_id, created_at, updated_at
+FROM waste
 WHERE kitchen_id = $1
   AND ($2::uuid IS NULL OR id > $2)
 ORDER BY id ASC
@@ -84,13 +95,13 @@ func ListWasteByKitchen(ctx context.Context, db DBTX, kitchenID, afterID uuid.UU
 }
 
 const wasteAnalyticsSQL = `
-SELECT food_type, waste_type,
+SELECT COALESCE(food_type, ''), COALESCE(waste_type, ''), COALESCE(cause, ''),
        SUM(quantity_kg)  AS total_kg,
        COUNT(*)          AS record_count
-FROM waste_records
+FROM waste
 WHERE kitchen_id = $1
   AND recorded_at BETWEEN $2 AND $3
-GROUP BY food_type, waste_type
+GROUP BY food_type, waste_type, cause
 ORDER BY food_type, waste_type`
 
 // WasteAnalytics aggregates waste by food_type and waste_type for a kitchen
@@ -105,7 +116,7 @@ func WasteAnalytics(ctx context.Context, db DBTX, kitchenID uuid.UUID, from, to 
 	var results []WasteAnalyticsRow
 	for rows.Next() {
 		var r WasteAnalyticsRow
-		if err := rows.Scan(&r.FoodType, &r.WasteType, &r.TotalKg, &r.RecordCount); err != nil {
+		if err := rows.Scan(&r.FoodType, &r.WasteType, &r.Cause, &r.TotalKg, &r.RecordCount); err != nil {
 			return nil, fmt.Errorf("queries.WasteAnalytics scan: %w", err)
 		}
 		results = append(results, r)
@@ -120,9 +131,9 @@ func WasteAnalytics(ctx context.Context, db DBTX, kitchenID uuid.UUID, from, to 
 func scanWaste(row pgx.Row) (Waste, error) {
 	var w Waste
 	err := row.Scan(
-		&w.ID, &w.KitchenID, &w.FoodType,
-		&w.QuantityKg, &w.WasteType,
-		&w.RecordedAt, &w.CreatedAt,
+		&w.ID, &w.MealID, &w.KitchenID, &w.FoodType,
+		&w.QuantityKg, &w.Cause, &w.WasteType, &w.Note,
+		&w.RecordedAt, &w.ClientEventID, &w.CreatedAt, &w.UpdatedAt,
 	)
 	if err != nil {
 		return Waste{}, fmt.Errorf("queries.scanWaste: %w", err)
@@ -135,9 +146,9 @@ func collectWaste(rows pgx.Rows) ([]Waste, error) {
 	for rows.Next() {
 		var w Waste
 		if err := rows.Scan(
-			&w.ID, &w.KitchenID, &w.FoodType,
-			&w.QuantityKg, &w.WasteType,
-			&w.RecordedAt, &w.CreatedAt,
+			&w.ID, &w.MealID, &w.KitchenID, &w.FoodType,
+			&w.QuantityKg, &w.Cause, &w.WasteType, &w.Note,
+			&w.RecordedAt, &w.ClientEventID, &w.CreatedAt, &w.UpdatedAt,
 		); err != nil {
 			return nil, fmt.Errorf("queries.collectWaste: %w", err)
 		}
