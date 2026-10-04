@@ -2,6 +2,8 @@ package services
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -100,7 +102,10 @@ func (s *PredictionService) PredictDemand(ctx context.Context, in PredictDemandI
 		in.Date = time.Now().UTC().Format("2006-01-02")
 	}
 
-	cacheKey := fmt.Sprintf("pred:%s:%s:%s", in.KitchenID, in.Date, in.MealType)
+	// Build cache key: cache:predict:{sha256(request JSON)} per KEYS.md
+	reqJSON, _ := json.Marshal(in)
+	sumBytes := sha256.Sum256(reqJSON)
+	cacheKey := "cache:predict:" + hex.EncodeToString(sumBytes[:])
 	if s.rdb != nil {
 		if raw, err := s.rdb.Get(ctx, cacheKey).Bytes(); err == nil {
 			var out PredictDemandOutput

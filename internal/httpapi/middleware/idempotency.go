@@ -65,7 +65,12 @@ func Idempotency(store *redisx.KVStore) func(http.Handler) http.Handler {
 
 			sum := sha256.Sum256(bodyBytes)
 			bodyHash := hex.EncodeToString(sum[:])
-			redisKey := fmt.Sprintf("idem:%s", key)
+			// Use idem:{userID}:{key} per KEYS.md; fall back to "anon" for unauthenticated POSTs.
+			userScope := "anon"
+			if claims := ClaimsFromCtx(r.Context()); claims != nil && claims.Subject != "" {
+				userScope = claims.Subject
+			}
+			redisKey := fmt.Sprintf("idem:%s:%s", userScope, key)
 			ctx := r.Context()
 
 			existing, found, _ := store.Get(ctx, redisKey)

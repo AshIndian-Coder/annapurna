@@ -1,4 +1,4 @@
-package main
+﻿package main
 
 import (
 	"context"
@@ -56,7 +56,16 @@ func main() {
 		logger.Warn("could not connect to redis (degraded mode active)", "error", err)
 	} else {
 		defer rdb.Close()
-		logger.Info("connected to redis")
+		logger.Info("connected to redis DB0")
+	}
+
+	// DB1 queue client: stream:sensor XADD, asynq queues — separate from cache DB0.
+	queueRdb, err := redisx.NewQueueClient(cfg.RedisURL)
+	if err != nil {
+		logger.Warn("could not connect to redis DB1 queue (stream writes disabled)", "error", err)
+	} else {
+		defer queueRdb.Close()
+		logger.Info("connected to redis DB1 (queue)")
 	}
 
 	mlClient := mlclient.NewMLClient(
@@ -78,7 +87,7 @@ func main() {
 	syncSvc := services.NewSyncService(pool, rdb, surplusSvc, qualitySvc, qrSvc)
 
 	alertSvc := services.NewAlertService(pool, rdb, nil, zap.NewNop())
-	sensorSvc := services.NewSensorService(pool, rdb, alertSvc, zap.NewNop())
+	sensorSvc := services.NewSensorService(pool, rdb, queueRdb, alertSvc, zap.NewNop())
 	procSvc := services.NewProcessingService(pool, zap.NewNop())
 	analyticsSvc := services.NewAnalyticsService(pool, rdb, zap.NewNop())
 	predSvc := services.NewPredictionService(pool, rdb, mlClient, zap.NewNop())

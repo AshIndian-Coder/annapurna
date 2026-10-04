@@ -46,7 +46,7 @@ func NewAnalyticsService(pool *pgxpool.Pool, rdb *redis.Client, log *zap.Logger)
 
 // GetImpact computes impact metrics for a kitchen, caching results in Redis for 30s.
 func (s *AnalyticsService) GetImpact(ctx context.Context, kitchenID string) (*ImpactMetrics, error) {
-	cacheKey := fmt.Sprintf("impact:%s", kitchenID)
+	cacheKey := fmt.Sprintf("cache:impact:%s", kitchenID)
 	if s.rdb != nil {
 		if raw, err := s.rdb.Get(ctx, cacheKey).Bytes(); err == nil {
 			var m ImpactMetrics

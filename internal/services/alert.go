@@ -14,7 +14,7 @@ import (
 	"github.com/sih26234/food-waste/internal/asynqx"
 )
 
-const sseAlertChannel = "sse:alerts"
+const sseAlertChannel = "chan:kitchen"
 
 // AlertDomain mirrors the alerts table.
 type AlertDomain struct {

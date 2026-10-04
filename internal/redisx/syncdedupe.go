@@ -1,4 +1,4 @@
-package redisx
+﻿package redisx
 
 import (
 	"context"
@@ -12,20 +12,20 @@ import (
 const dedupeTTL = 24 * time.Hour
 
 // dedupeKey builds the Redis key for a (userID, clientEventID) pair.
-// Format: dedupe:{userID}:{clientEventID}
+// Format: sync:dedupe:{userID}:{clientEventID} per KEYS.md
 func dedupeKey(userID int, clientEventID string) string {
-	return fmt.Sprintf("dedupe:%d:%s", userID, clientEventID)
+	return fmt.Sprintf("sync:dedupe:%d:%s", userID, clientEventID)
 }
 
 // SetDedupeResult stores the resultRef (e.g. an order ID or idempotency token)
 // for a (userID, clientEventID) pair using SET NX with a 24-hour TTL.
 //
-// Returns (true, nil)  — first time this event was seen; caller should process it.
-// Returns (false, nil) — duplicate; caller should replay resultRef.
-// Returns (false, err) — Redis error; caller should treat as non-duplicate to be safe.
+// Returns (true, nil)  â€” first time this event was seen; caller should process it.
+// Returns (false, nil) â€” duplicate; caller should replay resultRef.
+// Returns (false, err) â€” Redis error; caller should treat as non-duplicate to be safe.
 func SetDedupeResult(ctx context.Context, c *redis.Client, userID int, clientEventID, resultRef string) (bool, error) {
 	if GracefulDegrade.Load() == 1 {
-		// Fail open — process the event; risk of duplicate is preferable to data loss.
+		// Fail open â€” process the event; risk of duplicate is preferable to data loss.
 		return true, nil
 	}
 	key := dedupeKey(userID, clientEventID)

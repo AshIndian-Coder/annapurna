@@ -1,4 +1,4 @@
-package services
+﻿package services
 
 import (
 	"context"
@@ -145,18 +145,42 @@ func (s *SensorService) xaddStream(ctx context.Context, r SensorReading) error {
 	if r.EnergyKWh != nil {
 		fields["energy_kwh"] = strconv.FormatFloat(*r.EnergyKWh, 'f', 6, 64)
 	}
-	return s.rdb.XAdd(ctx, &redis.XAddArgs{
-		Stream: sensorStreamKey,
-		Values: fields,
-	}).Err()
+	// Write to stream:sensor on DB1 (queue) per KEYS.md.
+	if s.queueRdb != nil {
+		return s.queueRdb.XAdd(ctx, &redis.XAddArgs{
+			Stream: sensorStreamKey,
+			MaxLen: 100_000,
+			Approx: true,
+			Values: fields,
+		}).Err()
+	}
+	return nil
 }
 
 func (s *SensorService) hsetLatest(ctx context.Context, r SensorReading) error {
-	raw, err := json.Marshal(r)
-	if err != nil {
-		return err
+	if s.rdb == nil {
+		return nil
 	}
-	return s.rdb.HSet(ctx, sensorLatestKey, r.SensorID, raw).Err()
+	// Key: sensor:latest:{kitchenID} (location_id = kitchenID) per KEYS.md.
+	key := fmt.Sprintf(sensorLatestFmt, r.KitchenID)
+	fields := map[string]interface{}{
+		"sensor_id": r.SensorID,
+		"ts":        r.Timestamp.UTC().Format(time.RFC3339),
+	}
+	if r.Temp != nil {
+		fields["temperature_c"] = strconv.FormatFloat(*r.Temp, 'f', 4, 64)
+	}
+	if r.Humidity != nil {
+		fields["humidity_pct"] = strconv.FormatFloat(*r.Humidity, 'f', 4, 64)
+	}
+	if r.EnergyKWh != nil {
+		fields["energy_kwh"] = strconv.FormatFloat(*r.EnergyKWh, 'f', 6, 64)
+	}
+	pipe := s.rdb.Pipeline()
+	pipe.HSet(ctx, key, fields)
+	pipe.Expire(ctx, key, sensorLatestTTL)
+	_, err := pipe.Exec(ctx)
+	return err
 }
 
 func (s *SensorService) publishKitchen(ctx context.Context, r SensorReading) {
@@ -260,20 +284,34 @@ func (s *SensorService) evaluateThresholds(ctx context.Context, r SensorReading)
 
 // GetLatest returns the most recent reading for sensors in a kitchen.
 func (s *SensorService) GetLatest(ctx context.Context, kitchenID string) ([]SensorReading, error) {
-	// First check Redis
-	if s.rdb != nil {
-		all, err := s.rdb.HGetAll(ctx, sensorLatestKey).Result()
-		if err == nil && len(all) > 0 {
-			var readings []SensorReading
-			for _, raw := range all {
-				var r SensorReading
-				if err := json.Unmarshal([]byte(raw), &r); err == nil && (kitchenID == "" || r.KitchenID == kitchenID) {
-					readings = append(readings, r)
+	// Check Redis sensor:latest:{kitchenID} hash per KEYS.md.
+	if s.rdb != nil && kitchenID != "" {
+		key := fmt.Sprintf(sensorLatestFmt, kitchenID)
+		fields, err := s.rdb.HGetAll(ctx, key).Result()
+		if err == nil && len(fields) > 0 {
+			r := SensorReading{
+				SensorID:  fields["sensor_id"],
+				KitchenID: kitchenID,
+			}
+			if ts, err := time.Parse(time.RFC3339, fields["ts"]); err == nil {
+				r.Timestamp = ts
+			}
+			if v, ok := fields["temperature_c"]; ok {
+				if f, err := strconv.ParseFloat(v, 64); err == nil {
+					r.Temp = &f
 				}
 			}
-			if len(readings) > 0 {
-				return readings, nil
+			if v, ok := fields["humidity_pct"]; ok {
+				if f, err := strconv.ParseFloat(v, 64); err == nil {
+					r.Humidity = &f
+				}
 			}
+			if v, ok := fields["energy_kwh"]; ok {
+				if f, err := strconv.ParseFloat(v, 64); err == nil {
+					r.EnergyKWh = &f
+				}
+			}
+			return []SensorReading{r}, nil
 		}
 	}
 

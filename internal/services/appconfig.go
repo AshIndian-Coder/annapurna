@@ -1,4 +1,4 @@
-package services
+﻿package services
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 )
 
 const appConfigCacheTTL = 60 * time.Second
-const appConfigCacheKey = "appconfig:v1"
+const appConfigCacheKey = "cache:appconfig"
 
 // ModelBundle describes the downloaded ML model bundle.
 type ModelBundle struct {
