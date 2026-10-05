@@ -1,0 +1,83 @@
+# FoodSupply_Test Project Requirements
+
+This project contains two main parts: a Go Backend and a Flutter Frontend. Below is the comprehensive list of system requirements, dependencies, and their exact versions required to run the application.
+
+## 1. System & Infrastructure Requirements
+The following software is required on the host system to run the backend services via Docker.
+
+- **Docker Engine**: Required to run containerized services.
+- **Docker Compose**: Orchestrates the database and caching containers.
+- **PostgreSQL**: Version `16` (Image: `postgres:16-alpine`)
+  - Port mapping: `5433` (host) to `5432` (container)
+- **Redis**: Version `7` (Image: `redis:7-alpine`)
+  - Port mapping: `6379` (host) to `6379` (container)
+
+## 2. Backend Requirements (Go Application)
+Located in the `backend/` directory.
+
+### Core Language
+- **Go SDK**: `1.23`
+
+### Exact Dependencies
+These are automatically managed by `go.mod` and `go.sum`. 
+- `github.com/go-chi/chi/v5` `v5.1.0`
+- `github.com/golang-jwt/jwt/v5` `v5.2.1`
+- `github.com/google/uuid` `v1.6.0`
+- `github.com/hibiken/asynq` `v0.24.1`
+- `github.com/jackc/pgx/v5` `v5.7.1`
+- `github.com/prometheus/client_golang` `v1.20.5`
+- `github.com/redis/go-redis/v9` `v9.7.0`
+- `github.com/sony/gobreaker` `v1.0.0`
+- `github.com/xuri/excelize/v2` `v2.9.0`
+- `go.uber.org/zap` `v1.28.0`
+- `golang.org/x/crypto` `v0.28.0`
+
+*Setup command (inside `backend/`):*
+```sh
+go mod download
+```
+
+## 3. Frontend Requirements (Flutter Application)
+Located in the `Frontend/` directory (App Name: `annapurna`).
+
+### Core Framework
+- **Flutter SDK**: `^3.0.0` (Stable Channel)
+- **Dart SDK**: Required as part of Flutter `^3.0.0`
+- **Android Studio / Xcode**: For emulation and building the app.
+
+### Exact Dependencies
+These are defined in `pubspec.yaml`.
+- `flutter_riverpod`: `^2.5.1`
+- `go_router`: `^14.2.0`
+- `dio`: `^5.5.0`
+- `file_picker`: `^8.1.2`
+- `flutter_secure_storage`: `^9.2.2`
+- `shared_preferences`: `^2.3.0`
+- `fl_chart`: `^0.69.0`
+- `intl`: `^0.19.0`
+- `path_provider`: `^2.1.4`
+- `share_plus`: `^10.0.0`
+- `connectivity_plus`: `^6.0.5`
+- `uuid`: `^4.4.2`
+- `flutter_map`: `^7.0.2`
+- `latlong2`: `^0.9.1`
+- `drift`: `^2.20.0`
+- `sqlite3_flutter_libs`: `^0.5.24`
+- `camera`: `^0.10.5+9`
+- `flutter_image_compress`: `^2.1.0`
+- `image`: `^4.1.3`
+- `firebase_core`: `^2.32.0`
+- `firebase_messaging`: `14.7.10`
+- `flutter_local_notifications`: `^17.1.2`
+- `mobile_scanner`: `^6.0.11`
+- `permission_handler`: `^12.0.3`
+
+### Development Dependencies
+- `flutter_lints`: `^4.0.0`
+- `drift_dev`: `^2.20.0`
+- `build_runner`: `^2.4.11`
+
+*Setup command (inside `Frontend/`):*
+```sh
+flutter pub get
+```

@@ -1,0 +1,28 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*.iml
+*.sublime-project
+*.sublime-workspace
+.freebuff/
+
+# Environment Variables
+.env
+*.env
+.env.*.local
+.env.local
+
+# Note: backend and Frontend folders have their own .gitignore files.
+# The rules above apply globally across the repository.
