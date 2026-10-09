@@ -1,0 +1,21 @@
+{
+  "size": 224,
+  "crop_pct": 0.875,
+  "interpolation": "bilinear",
+  "resize_short": 256,
+  "color_space": "RGB",
+  "layout": "NCHW",
+  "value_range": "0..1",
+  "normalise_mean": [
+    0.5,
+    0.5,
+    0.5
+  ],
+  "normalise_std": [
+    0.5,
+    0.5,
+    0.5
+  ],
+  "quant_scale": null,
+  "quant_zero_point": null
+}

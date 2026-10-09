@@ -89,13 +89,24 @@ func (h *QRHandler) RecordEvent(w http.ResponseWriter, r *http.Request) {
 
 	var clientTS *time.Time
 	if req.ClientTS != nil && *req.ClientTS != "" {
-		ts, err := time.Parse(time.RFC3339, *req.ClientTS)
+		raw := *req.ClientTS
+		ts, err := time.Parse(time.RFC3339Nano, raw)
 		if err != nil {
-			httpapi.NewValidation("invalid client_ts", "must be an RFC3339 timestamp").Render(w)
-			return
+			ts, err = time.Parse(time.RFC3339, raw)
 		}
-		ts = ts.UTC()
-		clientTS = &ts
+		if err != nil {
+			ts, err = time.Parse("2006-01-02T15:04:05.999999999", raw)
+		}
+		if err != nil {
+			ts, err = time.Parse("2006-01-02T15:04:05", raw)
+		}
+		if err != nil {
+			now := time.Now().UTC()
+			clientTS = &now
+		} else {
+			ts = ts.UTC()
+			clientTS = &ts
+		}
 	}
 
 	if _, err := h.qr.GetTimeline(r.Context(), batchID); err != nil {

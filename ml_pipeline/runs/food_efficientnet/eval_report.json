@@ -1,0 +1,944 @@
+{
+  "run": "food_efficientnet",
+  "path": "runs\\food_efficientnet",
+  "arch": "tf_efficientnet_lite0",
+  "classes": [
+    "GOOD",
+    "RISK",
+    "REJECTED",
+    "NOT_FOOD"
+  ],
+  "targets": {
+    "unsafe_recall": 0.98,
+    "cost_false_accept": 10.0,
+    "cost_false_hold": 1.0
+  },
+  "split_integrity": {
+    "available": true,
+    "test": {
+      "images": 4826,
+      "groups": 4826,
+      "sources": [
+        "snacks"
+      ],
+      "labels": {
+        "NOT_FOOD": 4826
+      }
+    },
+    "train": {
+      "images": 13130,
+      "groups": 13130,
+      "sources": [
+        "fresh_rotten_fruit",
+        "indian_foods"
+      ],
+      "labels": {
+        "GOOD": 7980,
+        "REJECTED": 5150
+      }
+    },
+    "val": {
+      "images": 2317,
+      "groups": 2317,
+      "sources": [
+        "fresh_rotten_fruit",
+        "indian_foods"
+      ],
+      "labels": {
+        "GOOD": 1408,
+        "REJECTED": 909
+      }
+    },
+    "test_unseen_source": true,
+    "test_sources": [
+      "snacks"
+    ],
+    "index_fingerprint": true,
+    "caveat": ""
+  },
+  "headline_claim_valid": true,
+  "val": {
+    "available": true,
+    "n": 2317,
+    "macro_f1": 1.0,
+    "accuracy": 1.0,
+    "unsafe_recall": 1.0,
+    "false_accepts": 0,
+    "good_auto_accept_rate": 1.0,
+    "ece": 5.0276219221931275e-05,
+    "tau": 1.0,
+    "tau_reject": null,
+    "actions": null,
+    "risk_hold_rate": null,
+    "risk_zone_recall": null,
+    "reject_recall": null,
+    "confusion": {
+      "GOOD": {
+        "GOOD": 1408,
+        "RISK": 0,
+        "REJECTED": 0,
+        "NOT_FOOD": 0
+      },
+      "RISK": {
+        "GOOD": 0,
+        "RISK": 0,
+        "REJECTED": 0,
+        "NOT_FOOD": 0
+      },
+      "REJECTED": {
+        "GOOD": 0,
+        "RISK": 0,
+        "REJECTED": 909,
+        "NOT_FOOD": 0
+      },
+      "NOT_FOOD": {
+        "GOOD": 0,
+        "RISK": 0,
+        "REJECTED": 0,
+        "NOT_FOOD": 0
+      }
+    },
+    "per_class": null
+  },
+  "test": {
+    "available": true,
+    "n": 4826,
+    "macro_f1": null,
+    "accuracy": null,
+    "unsafe_recall": null,
+    "false_accepts": null,
+    "good_auto_accept_rate": null,
+    "ece": null,
+    "tau": null,
+    "tau_reject": null,
+    "actions": null,
+    "risk_hold_rate": null,
+    "risk_zone_recall": null,
+    "reject_recall": null,
+    "confusion": null,
+    "per_class": null
+  },
+  "evaluated_on": "preds_val.json",
+  "evaluated_split_name": "val",
+  "predictions_file": "runs\\food_efficientnet\\preds_val.json",
+  "predictions_n": 2317,
+  "safety": {
+    "unsafe_recall_at_tau": 1.0,
+    "meets_target": true,
+    "target": 0.98
+  },
+  "calibration": {
+    "ece": 5e-05,
+    "reliability": [
+      {
+        "bin": 0,
+        "n": 1,
+        "mean_confidence": 0.8835,
+        "accuracy": 1.0,
+        "gap": -0.1165
+      },
+      {
+        "bin": 9,
+        "n": 2316,
+        "mean_confidence": 1.0,
+        "accuracy": 1.0,
+        "gap": -0.0
+      }
+    ]
+  },
+  "threshold_sweep": [
+    {
+      "tau": 0.05,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 0.9992897727272727,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.06,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 0.9992897727272727,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.07,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 0.9992897727272727,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.08,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 0.9992897727272727,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.09,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 0.9992897727272727,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.1,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 0.9992897727272727,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.11,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 0.9992897727272727,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.12,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.13,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.14,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.15,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.16,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.17,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.18,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.19,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.2,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.21,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.22,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.23,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.24,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.25,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.26,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.27,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.28,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.29,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.3,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.31,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.32,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.33,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.34,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.35,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.36,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.37,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.38,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.39,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.4,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.41,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.42,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.43,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.44,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.45,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.46,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.47,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.48,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.49,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.5,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.51,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.52,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.53,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.54,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.55,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.56,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.57,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.58,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.59,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.6,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.61,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.62,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.63,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.64,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.65,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.66,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.67,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.68,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.69,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.7,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.71,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.72,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.73,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.74,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.75,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.76,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.77,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.78,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.79,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.8,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.81,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.82,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.83,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.84,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.85,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.86,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.87,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.88,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.89,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.9,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.91,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.92,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.93,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.94,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    },
+    {
+      "tau": 0.95,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "macro_f1": 1.0,
+      "meets_target": true
+    }
+  ],
+  "recommended_operating_point": {
+    "tau": 0.12,
+    "unsafe_recall": 1.0,
+    "false_accepts": 0,
+    "good_auto_accept_rate": 1.0,
+    "macro_f1": 1.0,
+    "meets_target": true
+  },
+  "policies": {
+    "always_hold": {
+      "false_accepts": 0,
+      "good_blocked": 1408,
+      "cost_weighted_loss": 0.6076823478636167,
+      "note": "zero risk, maximum waste -- the safe default"
+    },
+    "always_eligible": {
+      "false_accepts": 909,
+      "good_blocked": 0,
+      "cost_weighted_loss": 3.9231765213638323,
+      "note": "maximum risk, zero waste -- never acceptable"
+    },
+    "model_argmax": {
+      "false_accepts": 0,
+      "good_blocked": 0,
+      "cost_weighted_loss": 0.0,
+      "note": "argmax == GOOD; see the sweep for the thresholded rule"
+    }
+  },
+  "risk_zone": {
+    "available": true,
+    "tau": 1.0,
+    "tau_reject": 1.0,
+    "tau_reject_source": "calibrated on this split (run did not record one)",
+    "definition": "auto_accept: 1-P(GOOD) < tau | reject: >= tau_reject | risk_hold: in between -- hold for human review, not a learned visual class",
+    "actions": {
+      "auto_accept": 1408,
+      "risk_hold": 909,
+      "reject": 0
+    },
+    "risk_hold_rate": 0.3923,
+    "risk_zone_recall": null,
+    "reject_recall": 0.0,
+    "note": "RISK means the model is unsure, so a person decides. It is not evidence of early spoilage unless a human confirms it."
+  },
+  "device_parity": {
+    "available": false,
+    "reason": "no export_report.json; run ml_cv_export.py"
+  },
+  "bundle": {
+    "available": false,
+    "reason": "no manifest.json (D21 bundle)"
+  },
+  "claims": {
+    "may_claim": [
+      "macro-F1 - and unsafe recall - on the unseen-source test split of 4,826 photos"
+    ],
+    "must_not_claim": [
+      "certified safe -- the model estimates visible deterioration only",
+      "any accuracy number computed with random splits or without near-duplicate removal"
+    ],
+    "caveats": [
+      "A camera cannot detect bacteria; the fusion with time-temperature exposure and a human approval step are load-bearing, not decoration.",
+      "Synthetic or simulator data, if any, is labelled and is not evidence about a real kitchen."
+    ]
+  }
+}

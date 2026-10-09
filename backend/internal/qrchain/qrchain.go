@@ -45,6 +45,8 @@ type EventResult struct {
 	ActorID   string    `json:"actor_id"`
 	PrevHash  string    `json:"prev_hash"`
 	Hash      string    `json:"hash"`
+	Timestamp string    `json:"timestamp"`
+	ServerTS  string    `json:"server_ts"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
@@ -82,6 +84,8 @@ func (s *Service) RecordEvent(
 			ActorID:   actorID,
 			PrevHash:  GenesisHash,
 			Hash:      computedHash,
+			Timestamp: nowISO,
+			ServerTS:  nowISO,
 			CreatedAt: now,
 		}, nil
 	}
@@ -131,6 +135,8 @@ func (s *Service) RecordEvent(
 		ActorID:   actorID,
 		PrevHash:  prevHash,
 		Hash:      computedHash,
+		Timestamp: nowISO,
+		ServerTS:  nowISO,
 		CreatedAt: now,
 	}, nil
 }
@@ -146,6 +152,8 @@ func (s *Service) eventByClientID(ctx context.Context, clientEventID string) (*E
 	if err != nil {
 		return nil, err
 	}
+	e.Timestamp = e.CreatedAt.UTC().Format(time.RFC3339)
+	e.ServerTS = e.Timestamp
 	return &e, nil
 }
 

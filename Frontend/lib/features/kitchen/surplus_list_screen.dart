@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../../core/enums.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/api/api_client.dart';
+import '../../core/result/result.dart';
 import '../../data/dtos/models.dart';
 import '../../data/services/surplus_service.dart';
 import '../../shared/widgets/common_widgets.dart';
@@ -50,12 +53,12 @@ class SurplusListScreen extends ConsumerWidget {
   }
 }
 
-class _SurplusCard extends StatelessWidget {
+class _SurplusCard extends ConsumerWidget {
   final Surplus surplus;
   const _SurplusCard({required this.surplus});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final expiry = surplus.timeToExpiry;
     final expiryText = expiry.isNegative
         ? 'Expired'
@@ -64,7 +67,6 @@ class _SurplusCard extends StatelessWidget {
             : '${expiry.inMinutes}m left';
 
     return GestureDetector(
-      onTap: () => context.push('/kitchen/quality/result/${surplus.batchId}'),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
@@ -113,8 +115,126 @@ class _SurplusCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             _buildStepper(surplus.status),
+            if (surplus.status == SurplusStatus.available) ...[
+              const SizedBox(height: 16),
+              const Divider(height: 1),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton.icon(
+                    onPressed: () => _triggerMatch(context, ref, surplus.batchId),
+                    icon: const Icon(Icons.people, color: AppColors.primary),
+                    label: const Text('Find NGOs', style: TextStyle(color: AppColors.primary)),
+                  ),
+                ],
+              ),
+            ],
+            if (surplus.status == SurplusStatus.matched || surplus.status == SurplusStatus.inTransit) ...[
+              const SizedBox(height: 16),
+              const Divider(height: 1),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton.icon(
+                    onPressed: () => _showQrDialog(context, surplus),
+                    icon: const Icon(Icons.qr_code, color: AppColors.accent),
+                    label: const Text('Show QR', style: TextStyle(color: AppColors.accent)),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _triggerMatch(BuildContext context, WidgetRef ref, String batchId) async {
+    try {
+      final apiClient = ref.read(apiClientProvider);
+      var response = await apiClient.post('/matches/$batchId', data: {}, parser: (d) => true);
+      if (response is Failure) {
+        response = await apiClient.post('/surplus/$batchId/match', data: {}, parser: (d) => true);
+      }
+      response.when(
+        success: (_) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Notified nearby NGOs!')));
+          ref.invalidate(surplusListProvider);
+        },
+        failure: (e) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: ${e.message}')));
+        }
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+  }
+
+  void _showQrDialog(BuildContext context, Surplus surplus) {
+    final manualCode = surplus.batchCode.isNotEmpty ? surplus.batchCode : surplus.batchId;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surfaceElevated,
+        title: Text('Batch $manualCode'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Show this QR code to the driver for pickup scanning.', style: TextStyle(color: AppColors.textSecondary, fontSize: 13), textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: QrImageView(
+                  data: surplus.batchId, // The driver will scan this batch ID
+                  version: QrVersions.auto,
+                  size: 200.0,
+                  backgroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Column(
+                  children: [
+                    const Text(
+                      'If QR scanner does not work, use Batch Number:',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    ),
+                    const SizedBox(height: 6),
+                    SelectableText(
+                      manualCode,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.5,
+                        fontFamily: 'monospace',
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
       ),
     );
   }

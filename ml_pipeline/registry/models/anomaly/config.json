@@ -1,0 +1,12 @@
+{
+  "warm": 14,
+  "lam": 0.3,
+  "contamination": 0.05,
+  "metrics": [
+    "loss_pct",
+    "downtime_pct",
+    "energy_per_kg",
+    "overprod_pct"
+  ],
+  "seed": 42
+}

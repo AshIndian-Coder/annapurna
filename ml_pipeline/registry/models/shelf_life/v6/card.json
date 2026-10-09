@@ -1,0 +1,92 @@
+{
+  "name": "shelf-life-v6",
+  "trained_at": "2026-10-05T22:28:55+0530",
+  "task": "predict remaining safe hours as a conformal interval + a hard lower bound",
+  "model": "LightGBM L2 with monotone constraints + split conformal",
+  "why_not_quantile_regression": "LightGBM rejects monotone_constraints with objective='quantile'; the interval comes from split conformal instead, which also gives a finite-sample coverage guarantee",
+  "conformal": {
+    "q_low": -3.3725120062424843,
+    "q_high": 3.540113342437266,
+    "qhat": 7.160467239626939,
+    "coverage_lower": 0.8,
+    "coverage_upper": 0.8,
+    "coverage_bound": 0.95,
+    "n_calibration": 3026,
+    "method": "split conformal on a monotone L2 regressor"
+  },
+  "monotone_constraints": {
+    "category": 0,
+    "hours_since_prepared": -1,
+    "danger_zone_minutes": -1,
+    "hot_hold_minutes": 0,
+    "chilled_minutes": 0,
+    "current_temp_c": 0,
+    "mean_temp_c": 0,
+    "humidity_mean": -1,
+    "cv_unsafe_prob": -1
+  },
+  "features": [
+    "category",
+    "hours_since_prepared",
+    "danger_zone_minutes",
+    "hot_hold_minutes",
+    "chilled_minutes",
+    "current_temp_c",
+    "mean_temp_c",
+    "humidity_mean",
+    "cv_unsafe_prob"
+  ],
+  "categories": [
+    "bread_roti",
+    "cooked_veg",
+    "dairy_based",
+    "fried_snack",
+    "non_veg_curry",
+    "raw_salad",
+    "rice_dal",
+    "sweets"
+  ],
+  "metrics": {
+    "data_source": [
+      "SYNTHETIC"
+    ],
+    "n_test": 2972,
+    "mae_point_hours": 2.4531022898782413,
+    "bias_hours": -0.020340498161286934,
+    "coverage_interval": 0.7954239569313594,
+    "target_interval_coverage": 0.6000000000000001,
+    "meets_interval_target": true,
+    "share_true_above_lower_bound": 0.9552489905787349,
+    "target_lower_bound_coverage": 0.95,
+    "meets_coverage_target": true,
+    "false_safe_rate_lower_bound": 0.04475100942126514,
+    "mean_interval_width_hours": 6.268897632769484,
+    "mean_lower_bound_hours": 17.833112023270115,
+    "mean_true_hours": 22.977289947453823,
+    "q_low_hours": -3.3725120062424843,
+    "q_high_hours": 3.540113342437266,
+    "qhat_hours": 7.160467239626939,
+    "by_scenario_lower_bound_coverage": {
+      "ambient": 0.9934640522875817,
+      "chilled": 0.9343365253077975,
+      "hot_hold": 0.9383408071748879,
+      "mixed": 0.9443155452436195
+    },
+    "by_category_coverage": {
+      "bread_roti": 0.9915254237288136,
+      "cooked_veg": 0.8994252873563219,
+      "dairy_based": 0.9646464646464646,
+      "fried_snack": 0.9946091644204852,
+      "non_veg_curry": 0.9460916442048517,
+      "raw_salad": 0.9673024523160763,
+      "rice_dal": 0.9106628242074928,
+      "sweets": 0.9617224880382775
+    },
+    "caveat": "labels are rule-derived; this is decision support, not food-safety certification"
+  },
+  "limitations": [
+    "labels are rule-derived; this is decision support, not food-safety certification"
+  ],
+  "usage": "the lower bound becomes the hard pickup deadline in the VRPTW solver",
+  "license": "MIT (lightgbm + scipy)"
+}

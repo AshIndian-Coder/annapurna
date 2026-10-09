@@ -1,0 +1,66 @@
+{
+  "EWMA": {
+    "episode_recall": 0.96,
+    "median_delay_days": 0.0,
+    "day_precision": 0.5,
+    "false_alarms_per_unit_month": 2.370877411325451
+  },
+  "CUSUM": {
+    "episode_recall": 1.0,
+    "median_delay_days": 0.0,
+    "day_precision": 0.7465277777777778,
+    "false_alarms_per_unit_month": 1.3627878033602987
+  },
+  "IsolationForest": {
+    "episode_recall": 0.3,
+    "median_delay_days": 0.0,
+    "day_precision": 0.8529411764705882,
+    "false_alarms_per_unit_month": 0.09334163036714374
+  },
+  "EWMA_or_CUSUM": {
+    "episode_recall": 1.0,
+    "median_delay_days": 0.0,
+    "day_precision": 0.5717592592592593,
+    "false_alarms_per_unit_month": 3.4536403235843185
+  },
+  "any_method": {
+    "episode_recall": 1.0,
+    "median_delay_days": 0.0,
+    "day_precision": 0.5697940503432495,
+    "false_alarms_per_unit_month": 3.5096453018046048
+  },
+  "at_least_2_methods": {
+    "episode_recall": 0.94,
+    "median_delay_days": 0.0,
+    "day_precision": 0.8608695652173913,
+    "false_alarms_per_unit_month": 0.29869321717485997
+  },
+  "ewma_or_cusum_by_type": {
+    "downtime_spike": {
+      "episodes": 5,
+      "detected": 5
+    },
+    "energy_drift": {
+      "episodes": 15,
+      "detected": 15
+    },
+    "energy_spike": {
+      "episodes": 12,
+      "detected": 12
+    },
+    "overproduction": {
+      "episodes": 11,
+      "detected": 11
+    },
+    "yield_drop": {
+      "episodes": 7,
+      "detected": 7
+    }
+  },
+  "n_episodes": 50,
+  "data_source": [
+    "SYNTHETIC"
+  ],
+  "caveat": "episodes are injected into SYNTHETIC data; the precision/recall below is a pipeline check, not evidence about a real plant",
+  "downtime_pct_definition": "downtime_min / runtime_min * 100 -- identical to Go internal/processing.DowntimePct (D9 parity)"
+}

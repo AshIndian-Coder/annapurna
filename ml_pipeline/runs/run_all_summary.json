@@ -1,0 +1,70 @@
+{
+  "started_at": "2026-10-05T22:27:17+0530",
+  "stages": {
+    "tests": {
+      "status": "ok",
+      "returncode": 0,
+      "seconds": 36.3
+    },
+    "demand-data": {
+      "status": "ok",
+      "returncode": 0,
+      "seconds": 3.0
+    },
+    "demand": {
+      "status": "ok",
+      "returncode": 0,
+      "seconds": 43.9
+    },
+    "quality-data": {
+      "status": "ok",
+      "returncode": 0,
+      "seconds": 5.9
+    },
+    "shelf-life": {
+      "status": "ok",
+      "returncode": 0,
+      "seconds": 10.6
+    },
+    "quality": {
+      "status": "ok",
+      "returncode": 0,
+      "seconds": 9.8
+    },
+    "processing-data": {
+      "status": "ok",
+      "returncode": 0,
+      "seconds": 1.0
+    },
+    "processing": {
+      "status": "ok",
+      "returncode": 0,
+      "seconds": 12.9
+    },
+    "sustainability": {
+      "status": "ok",
+      "returncode": 0,
+      "seconds": 1.0
+    },
+    "logistics-bench": {
+      "status": "ok",
+      "returncode": 0,
+      "seconds": 62.8
+    },
+    "logistics-match": {
+      "status": "ok",
+      "returncode": 0,
+      "seconds": 1.5
+    },
+    "logistics-route": {
+      "status": "ok",
+      "returncode": 0,
+      "seconds": 1.5
+    },
+    "cv-prepare": {
+      "status": "skipped",
+      "reason": "missing input: ['data/cv/raw']"
+    }
+  },
+  "elapsed_seconds": 190.1
+}

@@ -1,0 +1,6 @@
+{
+  "qhat": 8.55256234484861,
+  "coverage_target": 0.8,
+  "n_calibration": 577,
+  "method": "CQR (Romano et al. 2019), finite-sample ceil((n+1)*alpha)"
+}

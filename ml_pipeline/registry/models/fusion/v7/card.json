@@ -1,0 +1,111 @@
+{
+  "name": "fusion-v7",
+  "trained_at": "2026-10-05T22:29:05+0530",
+  "task": "server-side fusion of CV risk + time-temperature exposure into GOOD/RISK/REJECTED",
+  "model": "LightGBM (monotone) + isotonic calibration",
+  "monotone_constraints": {
+    "category": 0,
+    "hours_since_prepared": 1,
+    "danger_zone_minutes": 1,
+    "hot_hold_minutes": 0,
+    "chilled_minutes": 0,
+    "current_temp_c": 0,
+    "mean_temp_c": 0,
+    "humidity_mean": 1,
+    "cv_unsafe_prob": 1
+  },
+  "operating_point": {
+    "t_hold": 0.11428571428571428,
+    "t_reject": 0.5,
+    "target_unsafe_recall": 0.98
+  },
+  "features": [
+    "category",
+    "hours_since_prepared",
+    "danger_zone_minutes",
+    "hot_hold_minutes",
+    "chilled_minutes",
+    "current_temp_c",
+    "mean_temp_c",
+    "humidity_mean",
+    "cv_unsafe_prob"
+  ],
+  "categories": [
+    "bread_roti",
+    "cooked_veg",
+    "dairy_based",
+    "fried_snack",
+    "non_veg_curry",
+    "raw_salad",
+    "rice_dal",
+    "sweets"
+  ],
+  "metrics": {
+    "data_source": [
+      "SYNTHETIC"
+    ],
+    "n_test": 2972,
+    "unsafe_share": 0.13728129205921938,
+    "t_hold": 0.11428571428571428,
+    "t_reject": 0.5,
+    "hold_band_width": 0.38571428571428573,
+    "target_unsafe_recall": 0.98,
+    "unsafe_recall_not_good": 0.9852941176470589,
+    "unsafe_recall_ci95": [
+      0.9682677294456231,
+      0.994584581084448
+    ],
+    "n_unsafe_in_test": 408,
+    "recall_margin_requested": 0.02,
+    "meets_recall_target": true,
+    "false_accepts": 6,
+    "false_accept_rate_on_safe": 0.014705882352941176,
+    "safe_routed_to_review_rate": 0.039781591263650544,
+    "operating_point_note": "t_hold is chosen on the calibration fold for target+margin, never on test. Raising --recall-margin trades review workload for recall; measured on this fixture 0.01 -> 0.02 moved recall 0.9779 -> 0.9853 and the share of SAFE batches routed to a human rose 15.4 % -> 17.0 %. Both are reported so the operating point can be judged rather than assumed.",
+    "reject_precision": 0.9417721518987342,
+    "good_rate": 0.8304172274562585,
+    "risk_rate": 0.03667563930013459,
+    "reject_rate": 0.132907133243607,
+    "auc": 0.997557622893151,
+    "brier": 0.013302943740070758,
+    "ece": 0.005390479132750692,
+    "recall_by_category": {
+      "bread_roti": 1.0,
+      "cooked_veg": 1.0,
+      "dairy_based": 0.9885057471264368,
+      "fried_snack": 0.9375,
+      "non_veg_curry": 0.9625,
+      "raw_salad": 0.9919354838709677,
+      "rice_dal": 1.0,
+      "sweets": 1.0
+    },
+    "recall_by_scenario": {
+      "ambient": 0.98828125,
+      "chilled": 0.9827586206896551,
+      "hot_hold": 0.9545454545454546,
+      "mixed": 1.0
+    },
+    "latency_ms_p50": 3.7630459999490995,
+    "recall_frontier_note": "MEASURED, not assumed. A previous version of this file claimed recall plateaus near 0.95-0.96 because a hidden lognormal microbial-load term is not a model input. That was tested and it does not hold on this dataset: grouping all 20 000 rows by the exact feature vector finds 0 groups containing both a safe and an unsafe label, and sweeping every candidate threshold shows the full recall range is reachable -- 0.98 at a 2.7 % false-accept rate, 0.99 at 5.7 %. Increasing model capacity does NOT help (AUC 0.9972 at 600 trees vs 0.9963 at 3000 trees), so the operating threshold, not capacity, is the lever. The earlier 0.9779 was a threshold chosen with too little binomial slack and missed 0.98 by a single batch of 408.",
+    "monotone": {
+      "category": 0,
+      "hours_since_prepared": 1,
+      "danger_zone_minutes": 1,
+      "hot_hold_minutes": 0,
+      "chilled_minutes": 0,
+      "current_temp_c": 0,
+      "mean_temp_c": 0,
+      "humidity_mean": 1,
+      "cv_unsafe_prob": 1
+    },
+    "caveat": "labels are rule-derived from ml_configs_fusion.yaml, not microbiological ground truth; this is a pipeline check and decision support, never a certification of food safety"
+  },
+  "hard_rules_applied_in": "ml_quality_inference.assess_safety (expired, danger-minute budget)",
+  "intentionally_excluded_inputs": [
+    "device_preview -- the on-device preview must never be a model feature (D20)"
+  ],
+  "limitations": [
+    "labels are rule-derived from ml_configs_fusion.yaml, not microbiological ground truth; this is a pipeline check and decision support, never a certification of food safety"
+  ],
+  "license": "MIT (lightgbm + scikit-learn)"
+}

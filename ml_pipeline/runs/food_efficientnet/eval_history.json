@@ -1,0 +1,1794 @@
+[
+  {
+    "step": 453,
+    "epoch": 0,
+    "reason": "epoch_end",
+    "which": "ema",
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.4365908347231092,
+      "accuracy": 0.842468709538196,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 0.5355113636363636,
+      "not_food_recall": null,
+      "nll": 0.4401071517129563,
+      "ece": 0.019734807661441606,
+      "tau": 0.1600481152148988,
+      "per_class_recall": {
+        "GOOD": 0.8295454545454546,
+        "RISK": null,
+        "REJECTED": 0.8624862486248625,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1168,
+          "RISK": 67,
+          "REJECTED": 109,
+          "NOT_FOOD": 64
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 90,
+          "RISK": 20,
+          "REJECTED": 784,
+          "NOT_FOOD": 15
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 1.1203261613845825,
+      "selection": 4.892894277567393
+    },
+    "train_loss": 0.8541040352098105,
+    "train_acc": 0.5334348819497334,
+    "lr": 0.0005011037527593819
+  },
+  {
+    "step": 500,
+    "epoch": 1,
+    "reason": "step",
+    "which": "ema",
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.4330275379509107,
+      "accuracy": 0.8312473025463962,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 0.5369318181818182,
+      "not_food_recall": null,
+      "nll": 0.480661262939008,
+      "ece": 0.02673489647588517,
+      "tau": 0.11352363018140266,
+      "per_class_recall": {
+        "GOOD": 0.8856534090909091,
+        "RISK": null,
+        "REJECTED": 0.746974697469747,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1247,
+          "RISK": 71,
+          "REJECTED": 39,
+          "NOT_FOOD": 51
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 124,
+          "RISK": 50,
+          "REJECTED": 679,
+          "NOT_FOOD": 56
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 1.1710350513458252,
+      "selection": 4.89075143534065
+    },
+    "train_loss": 0.6843476891517639,
+    "train_acc": 0.6911225238444607,
+    "lr": 0.0005529801324503311
+  },
+  {
+    "step": 906,
+    "epoch": 1,
+    "reason": "epoch_end",
+    "which": "ema",
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.4675897167844504,
+      "accuracy": 0.9128182995252482,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 0.7741477272727273,
+      "not_food_recall": null,
+      "nll": 0.25260735324682143,
+      "ece": 0.012364954141312053,
+      "tau": 0.16244911448507116,
+      "per_class_recall": {
+        "GOOD": 0.9240056818181818,
+        "RISK": null,
+        "REJECTED": 0.8954895489548955,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1301,
+          "RISK": 29,
+          "REJECTED": 34,
+          "NOT_FOOD": 44
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 48,
+          "RISK": 27,
+          "REJECTED": 814,
+          "NOT_FOOD": 20
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.7765531539916992,
+      "selection": 5.162529523265099
+    },
+    "train_loss": 0.5874328649166606,
+    "train_acc": 0.6670982482863671,
+    "lr": 0.0010011037527593819
+  },
+  {
+    "step": 1000,
+    "epoch": 2,
+    "reason": "step",
+    "which": "ema",
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.4514525835673713,
+      "accuracy": 0.8679326715580492,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 0.7585227272727273,
+      "not_food_recall": null,
+      "nll": 0.3813383526329314,
+      "ece": 0.02396084400272134,
+      "tau": 0.31666295134017,
+      "per_class_recall": {
+        "GOOD": 0.8664772727272727,
+        "RISK": null,
+        "REJECTED": 0.8701870187018702,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1220,
+          "RISK": 40,
+          "REJECTED": 75,
+          "NOT_FOOD": 73
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 40,
+          "RISK": 14,
+          "REJECTED": 791,
+          "NOT_FOOD": 64
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.8085250854492188,
+      "selection": 5.130767390048019
+    },
+    "train_loss": 0.40553539991378784,
+    "train_acc": 0.6661775495231108,
+    "lr": 0.00110485651214128
+  },
+  {
+    "step": 1359,
+    "epoch": 2,
+    "reason": "epoch_end",
+    "which": "raw",
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.47062468725263135,
+      "accuracy": 0.9244712990936556,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 0.8892045454545454,
+      "not_food_recall": null,
+      "nll": 0.22756230562152063,
+      "ece": 0.013059714576873585,
+      "tau": 0.3153912423471317,
+      "per_class_recall": {
+        "GOOD": 0.9360795454545454,
+        "RISK": null,
+        "REJECTED": 0.9064906490649065,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1318,
+          "RISK": 27,
+          "REJECTED": 40,
+          "NOT_FOOD": 23
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 40,
+          "RISK": 27,
+          "REJECTED": 824,
+          "NOT_FOOD": 18
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.4781889319419861,
+      "selection": 5.280621311915098
+    },
+    "train_loss": 0.4742980323260918,
+    "train_acc": 0.7130997715156131,
+    "lr": 0.0029999999999999996
+  },
+  {
+    "step": 1500,
+    "epoch": 3,
+    "reason": "step",
+    "which": "ema",
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.9824131111781054,
+      "accuracy": 0.9831678895123004,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 0.9886363636363636,
+      "not_food_recall": null,
+      "nll": 0.04983632900107822,
+      "ece": 0.00546589361517028,
+      "tau": 0.732509758270731,
+      "per_class_recall": {
+        "GOOD": 0.9794034090909091,
+        "RISK": null,
+        "REJECTED": 0.988998899889989,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1379,
+          "RISK": 0,
+          "REJECTED": 29,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 10,
+          "RISK": 0,
+          "REJECTED": 899,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.2793072462081909,
+      "selection": 5.891841554022389
+    },
+    "train_loss": 0.2639784514904022,
+    "train_acc": 0.8170701883101003,
+    "lr": 0.0029990262151220054
+  },
+  {
+    "step": 1812,
+    "epoch": 3,
+    "reason": "epoch_end",
+    "which": "raw",
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.9931910256719196,
+      "accuracy": 0.9935261113508848,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 0.01793555259313431,
+      "ece": 0.0023498816040751387,
+      "tau": 0.6396304199217442,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 0.9834983498349835,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 15,
+          "RISK": 0,
+          "REJECTED": 894,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.25139543414115906,
+      "selection": 5.91398310487984
+    },
+    "train_loss": 0.29755047642585436,
+    "train_acc": 0.8272658035034273,
+    "lr": 0.002989958961246785
+  },
+  {
+    "step": 2000,
+    "epoch": 4,
+    "reason": "step",
+    "which": "ema",
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.9986414501361776,
+      "accuracy": 0.998705222270177,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 0.008690265830496573,
+      "ece": 0.0008153659561711981,
+      "tau": 0.9987572536665726,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 0.9966996699669967,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 3,
+          "RISK": 0,
+          "REJECTED": 906,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.2564734220504761,
+      "selection": 5.919433529344098
+    },
+    "train_loss": 0.2970849275588989,
+    "train_acc": 0.8325385179750551,
+    "lr": 0.002979917995975079
+  },
+  {
+    "step": 2265,
+    "epoch": 4,
+    "reason": "epoch_end",
+    "which": "raw",
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.9986414501361776,
+      "accuracy": 0.998705222270177,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 0.003674059918123463,
+      "ece": 0.0008754707371857477,
+      "tau": 0.9993148504444017,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 0.9966996699669967,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 3,
+          "RISK": 0,
+          "REJECTED": 906,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.226273775100708,
+      "selection": 5.919433529344098
+    },
+    "train_loss": 0.2736618616861509,
+    "train_acc": 0.8498095963442498,
+    "lr": 0.002959971632811038
+  },
+  {
+    "step": 2500,
+    "epoch": 5,
+    "reason": "step",
+    "which": "raw",
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.999094477603074,
+      "accuracy": 0.9991368148467846,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 0.004755896112077,
+      "ece": 0.0006772247174736512,
+      "tau": 0.99955369674696,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 0.9977997799779978,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 2,
+          "RISK": 0,
+          "REJECTED": 907,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.2471257895231247,
+      "selection": 5.919886556810995
+    },
+    "train_loss": 0.22861339151859283,
+    "train_acc": 0.8547322083639032,
+    "lr": 0.002936681176482263
+  },
+  {
+    "step": 2718,
+    "epoch": 5,
+    "reason": "epoch_end",
+    "which": "raw",
+    "val": {
+      "n": 2317,
+      "macro_f1": 1.0,
+      "accuracy": 1.0,
+      "unsafe_recall": 0.9988998899889989,
+      "false_accepts": 1,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 8.07101780558071e-08,
+      "ece": 8.070263179948967e-08,
+      "tau": 1.0,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.018315639346837997,
+      "selection": 5.995599559955996
+    },
+    "train_loss": 0.2699126130396958,
+    "train_acc": 0.848971820258949,
+    "lr": 0.0029104435418670738
+  },
+  {
+    "step": 3000,
+    "epoch": 6,
+    "reason": "step",
+    "which": "raw",
+    "val": {
+      "n": 2317,
+      "macro_f1": 1.0,
+      "accuracy": 1.0,
+      "unsafe_recall": 1.0,
+      "false_accepts": 0,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 5.345386373477016e-05,
+      "ece": 5.0276219221931275e-05,
+      "tau": 1.0,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.018315639346837997,
+      "selection": 6.0
+    },
+    "train_loss": 0.223018079996109,
+    "train_acc": 0.851186109073123,
+    "lr": 0.002870027908409482
+  },
+  {
+    "step": 3171,
+    "epoch": 6,
+    "reason": "epoch_end",
+    "which": "raw",
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.9990948313581358,
+      "accuracy": 0.9991368148467846,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 0.006361688268207841,
+      "ece": 0.001223908545713355,
+      "tau": 0.9993792118215105,
+      "per_class_recall": {
+        "GOOD": 0.9992897727272727,
+        "RISK": null,
+        "REJECTED": 0.9988998899889989,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1407,
+          "RISK": 0,
+          "REJECTED": 1,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 1,
+          "RISK": 0,
+          "REJECTED": 908,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.25024503469467163,
+      "selection": 5.919886910566056
+    },
+    "train_loss": 0.2686956618852227,
+    "train_acc": 0.8467631378522468,
+    "lr": 0.002842044470880267
+  },
+  {
+    "step": 3500,
+    "epoch": 7,
+    "reason": "step",
+    "which": "raw",
+    "val": {
+      "n": 2317,
+      "macro_f1": 1.0,
+      "accuracy": 1.0,
+      "unsafe_recall": 0.9977997799779978,
+      "false_accepts": 2,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 4.485576262152488e-09,
+      "ece": 4.48555292908992e-09,
+      "tau": 1.0,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.023149432614445686,
+      "selection": 5.991199119911991
+    },
+    "train_loss": 0.2236054241657257,
+    "train_acc": 0.8507493973378053,
+    "lr": 0.0027810560348247404
+  },
+  {
+    "step": 3624,
+    "epoch": 7,
+    "reason": "epoch_end",
+    "which": "raw",
+    "val": {
+      "n": 2317,
+      "macro_f1": 1.0,
+      "accuracy": 1.0,
+      "unsafe_recall": 0.9955995599559956,
+      "false_accepts": 4,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 1.2789568551500227e-07,
+      "ece": 1.2788519110351615e-07,
+      "tau": 1.0,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.018315639346837997,
+      "selection": 5.982398239823983
+    },
+    "train_loss": 0.2619632973654163,
+    "train_acc": 0.8506473724295507,
+    "lr": 0.0027556993999482103
+  },
+  {
+    "step": 4000,
+    "epoch": 8,
+    "reason": "step",
+    "which": "raw",
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.9995473273460196,
+      "accuracy": 0.9995684074233924,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 0.0016132297378076965,
+      "ece": 0.0009233378838085593,
+      "tau": 0.9999922994228305,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 0.9988998899889989,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 1,
+          "RISK": 0,
+          "REJECTED": 908,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.201049342751503,
+      "selection": 5.92033940655394
+    },
+    "train_loss": 0.2240700125694275,
+    "train_acc": 0.8535399853264857,
+    "lr": 0.0026712310075728855
+  },
+  {
+    "step": 4077,
+    "epoch": 8,
+    "reason": "epoch_end",
+    "which": "ema",
+    "val": {
+      "n": 2317,
+      "macro_f1": 1.0,
+      "accuracy": 1.0,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 6.226845846887858e-09,
+      "ece": 6.226824278421361e-09,
+      "tau": 0.9999999999993919,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.08193445950746536,
+      "selection": 5.920792079207921
+    },
+    "train_loss": 0.26468907080687193,
+    "train_acc": 0.8495049504950495,
+    "lr": 0.002652575998031682
+  },
+  {
+    "step": 4500,
+    "epoch": 9,
+    "reason": "step",
+    "which": "raw",
+    "val": {
+      "n": 2317,
+      "macro_f1": 1.0,
+      "accuracy": 1.0,
+      "unsafe_recall": 0.9966996699669967,
+      "false_accepts": 3,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 1.8169855595784794e-08,
+      "ece": 1.8169474591545054e-08,
+      "tau": 1.0,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.018315639346837997,
+      "selection": 5.986798679867986
+    },
+    "train_loss": 0.22192245721817017,
+    "train_acc": 0.8392434988179669,
+    "lr": 0.0025423617498822595
+  },
+  {
+    "step": 4530,
+    "epoch": 9,
+    "reason": "epoch_end",
+    "which": "raw",
+    "val": {
+      "n": 2317,
+      "macro_f1": 1.0,
+      "accuracy": 1.0,
+      "unsafe_recall": 0.9977997799779978,
+      "false_accepts": 2,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 7.563029573558325e-05,
+      "ece": 6.937605414208933e-05,
+      "tau": 1.0,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.018315639346837997,
+      "selection": 5.991199119911991
+    },
+    "train_loss": 0.26513409417772327,
+    "train_acc": 0.8416603198781416,
+    "lr": 0.002534068832235069
+  },
+  {
+    "step": 4983,
+    "epoch": 10,
+    "reason": "epoch_end",
+    "which": "ema",
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.9990951834235416,
+      "accuracy": 0.9991368148467846,
+      "unsafe_recall": 0.9812981298129813,
+      "false_accepts": 17,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 0.0008246031415997105,
+      "ece": 0.0005650722367107309,
+      "tau": 0.9999999983042122,
+      "per_class_recall": {
+        "GOOD": 0.9985795454545454,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1406,
+          "RISK": 0,
+          "REJECTED": 2,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.09903383255004883,
+      "selection": 5.924287702675467
+    },
+    "train_loss": 0.26147875007630667,
+    "train_acc": 0.8578065498857578,
+    "lr": 0.002401780508678637
+  },
+  {
+    "step": 5000,
+    "epoch": 11,
+    "reason": "step",
+    "which": "ema",
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.9990951834235416,
+      "accuracy": 0.9991368148467846,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 0.001706160411035879,
+      "ece": 0.0008557766192566707,
+      "tau": 0.9999898859919454,
+      "per_class_recall": {
+        "GOOD": 0.9985795454545454,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1406,
+          "RISK": 0,
+          "REJECTED": 2,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.18475741147994995,
+      "selection": 5.9198872626314625
+    },
+    "train_loss": 0.290892630815506,
+    "train_acc": 0.9107505070993914,
+    "lr": 0.0023965708616691937
+  },
+  {
+    "step": 5436,
+    "epoch": 11,
+    "reason": "epoch_end",
+    "which": "ema",
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.9990948313581358,
+      "accuracy": 0.9991368148467846,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 0.0014255629481709348,
+      "ece": 0.0007435121582261909,
+      "tau": 0.999999849417057,
+      "per_class_recall": {
+        "GOOD": 0.9992897727272727,
+        "RISK": null,
+        "REJECTED": 0.9988998899889989,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1407,
+          "RISK": 0,
+          "REJECTED": 1,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 1,
+          "RISK": 0,
+          "REJECTED": 908,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.1825217306613922,
+      "selection": 5.919886910566056
+    },
+    "train_loss": 0.2585929865702726,
+    "train_acc": 0.858948971820259,
+    "lr": 0.0022574999999999995
+  },
+  {
+    "step": 5500,
+    "epoch": 12,
+    "reason": "step",
+    "which": "raw",
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.9990948313581358,
+      "accuracy": 0.9991368148467846,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 0.0015023833639498433,
+      "ece": 0.0008634394858302488,
+      "tau": 0.9999799384024555,
+      "per_class_recall": {
+        "GOOD": 0.9992897727272727,
+        "RISK": null,
+        "REJECTED": 0.9988998899889989,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1407,
+          "RISK": 0,
+          "REJECTED": 1,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 1,
+          "RISK": 0,
+          "REJECTED": 908,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.20259559154510498,
+      "selection": 5.919886910566056
+    },
+    "train_loss": 0.2214599847793579,
+    "train_acc": 0.869073275862069,
+    "lr": 0.0022362596582874697
+  },
+  {
+    "step": 5889,
+    "epoch": 12,
+    "reason": "epoch_end",
+    "which": "raw",
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.9990951834235416,
+      "accuracy": 0.9991368148467846,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 0.001212881714340089,
+      "ece": 0.0007630432530623255,
+      "tau": 0.999996285914635,
+      "per_class_recall": {
+        "GOOD": 0.9985795454545454,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1406,
+          "RISK": 0,
+          "REJECTED": 2,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.19807182252407074,
+      "selection": 5.9198872626314625
+    },
+    "train_loss": 0.264762661743963,
+    "train_acc": 0.8530845392231531,
+    "lr": 0.0021031784525681477
+  },
+  {
+    "step": 6000,
+    "epoch": 13,
+    "reason": "step",
+    "which": "ema",
+    "val": {
+      "n": 2317,
+      "macro_f1": 1.0,
+      "accuracy": 1.0,
+      "unsafe_recall": 0.9977997799779978,
+      "false_accepts": 2,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 6.916397862551325e-09,
+      "ece": 6.916358596953387e-09,
+      "tau": 1.0,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.04161933809518814,
+      "selection": 5.991199119911991
+    },
+    "train_loss": 0.22141492366790771,
+    "train_acc": 0.8713886300093197,
+    "lr": 0.00206406861856798
+  },
+  {
+    "step": 6342,
+    "epoch": 13,
+    "reason": "epoch_end",
+    "which": "ema",
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.9995475038009094,
+      "accuracy": 0.9995684074233924,
+      "unsafe_recall": 0.9812981298129813,
+      "false_accepts": 17,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 0.00036522308582455566,
+      "ece": 0.0002554716811424937,
+      "tau": 0.9999999999994083,
+      "per_class_recall": {
+        "GOOD": 0.9992897727272727,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1407,
+          "RISK": 0,
+          "REJECTED": 1,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.0899018794298172,
+      "selection": 5.924740023052834
+    },
+    "train_loss": 0.25911013467658683,
+    "train_acc": 0.8648134044173648,
+    "lr": 0.001940902800575969
+  },
+  {
+    "step": 6500,
+    "epoch": 14,
+    "reason": "step",
+    "which": "raw",
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.9995475038009094,
+      "accuracy": 0.9995684074233924,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 0.0006220991706647716,
+      "ece": 0.0003927983050063371,
+      "tau": 0.9999983632217812,
+      "per_class_recall": {
+        "GOOD": 0.9992897727272727,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1407,
+          "RISK": 0,
+          "REJECTED": 1,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.17709340155124664,
+      "selection": 5.92033958300883
+    },
+    "train_loss": 0.3030569553375244,
+    "train_acc": 0.849628982976866,
+    "lr": 0.0018828338936072023
+  },
+  {
+    "step": 6795,
+    "epoch": 14,
+    "reason": "epoch_end",
+    "which": "ema",
+    "val": {
+      "n": 2317,
+      "macro_f1": 1.0,
+      "accuracy": 1.0,
+      "unsafe_recall": 0.9977997799779978,
+      "false_accepts": 2,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 7.800713612940478e-09,
+      "ece": 7.800653012424164e-09,
+      "tau": 1.0,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.051579974591732025,
+      "selection": 5.991199119911991
+    },
+    "train_loss": 0.26048306386523457,
+    "train_acc": 0.851942117288652,
+    "lr": 0.0017728675438353915
+  },
+  {
+    "step": 7000,
+    "epoch": 15,
+    "reason": "step",
+    "which": "raw",
+    "val": {
+      "n": 2317,
+      "macro_f1": 1.0,
+      "accuracy": 1.0,
+      "unsafe_recall": 0.9988998899889989,
+      "false_accepts": 1,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 7.362643826053299e-09,
+      "ece": 7.362580989322964e-09,
+      "tau": 1.0,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.023838534951210022,
+      "selection": 5.995599559955996
+    },
+    "train_loss": 0.22180114686489105,
+    "train_acc": 0.8455845248107654,
+    "lr": 0.0016955405926463306
+  },
+  {
+    "step": 7248,
+    "epoch": 15,
+    "reason": "epoch_end",
+    "which": "ema",
+    "val": {
+      "n": 2317,
+      "macro_f1": 1.0,
+      "accuracy": 1.0,
+      "unsafe_recall": 0.9977997799779978,
+      "false_accepts": 2,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 8.34758747305434e-09,
+      "ece": 8.347507796102605e-09,
+      "tau": 1.0,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.027876917272806168,
+      "selection": 5.991199119911991
+    },
+    "train_loss": 0.2554210823815194,
+    "train_acc": 0.8591012947448591,
+    "lr": 0.0016013450709320566
+  },
+  {
+    "step": 7500,
+    "epoch": 16,
+    "reason": "step",
+    "which": "raw",
+    "val": {
+      "n": 2317,
+      "macro_f1": 1.0,
+      "accuracy": 1.0,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 7.495457419217664e-09,
+      "ece": 7.495425502490605e-09,
+      "tau": 0.9999999999999973,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.07539980113506317,
+      "selection": 5.920792079207921
+    },
+    "train_loss": 0.22239331901073456,
+    "train_acc": 0.8459222769567597,
+    "lr": 0.001505273615467307
+  },
+  {
+    "step": 7701,
+    "epoch": 16,
+    "reason": "epoch_end",
+    "which": "ema",
+    "val": {
+      "n": 2317,
+      "macro_f1": 1.0,
+      "accuracy": 1.0,
+      "unsafe_recall": 0.9988998899889989,
+      "false_accepts": 1,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 5.749382955351185e-09,
+      "ece": 5.749344667016487e-09,
+      "tau": 1.0,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.02000771462917328,
+      "selection": 5.995599559955996
+    },
+    "train_loss": 0.2594349969459325,
+    "train_acc": 0.8543792840822544,
+    "lr": 0.0014286549290679434
+  }
+]

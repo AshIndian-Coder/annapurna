@@ -1,0 +1,266 @@
+{
+  "holdout": {
+    "n": 435,
+    "wape": 0.17986877412900193,
+    "mae": 24.812766045703427,
+    "rmse": 39.71730740275226,
+    "bias_kg": -1.6624620437297888,
+    "pinball": {
+      "0.1": 5.758876175916826,
+      "0.5": 12.406383022851713,
+      "0.75": 9.900891936615999,
+      "0.9": 5.920426762202177,
+      "0.95": 3.5286146560200873
+    },
+    "coverage": 0.8367816091954023,
+    "coverage_target": 0.8,
+    "mean_interval_width_kg": 89.54539630505522,
+    "mean_interval_width_pct": 0.7485024683204693,
+    "slices": {
+      "meal_type": {
+        "BREAKFAST": {
+          "n": 103,
+          "wape": 0.15436564179985704,
+          "coverage": 0.883495145631068,
+          "bias_kg": -0.4986718073004343
+        },
+        "DINNER": {
+          "n": 107,
+          "wape": 0.1716443857166022,
+          "coverage": 0.822429906542056,
+          "bias_kg": 3.2591038127393945
+        },
+        "LUNCH": {
+          "n": 188,
+          "wape": 0.1899218934117563,
+          "coverage": 0.7925531914893617,
+          "bias_kg": -4.966826639692005
+        },
+        "SNACK": {
+          "n": 37,
+          "wape": 0.2411631127801118,
+          "coverage": 0.972972972972973,
+          "bias_kg": -2.3450943938251783
+        }
+      },
+      "is_weekend": {
+        "0": {
+          "n": 336,
+          "wape": 0.17895064531790542,
+          "coverage": 0.8511904761904762,
+          "bias_kg": -1.3774900724449035
+        },
+        "1": {
+          "n": 99,
+          "wape": 0.18282290725052586,
+          "coverage": 0.7878787878787878,
+          "bias_kg": -2.6296396432421245
+        }
+      }
+    }
+  },
+  "calibration": {
+    "n": 577,
+    "wape": 0.1988706803177018,
+    "mae": 29.658098294169296,
+    "rmse": 53.11073364390078,
+    "bias_kg": -5.564794181413987,
+    "pinball": {
+      "0.1": 6.640895270880768,
+      "0.5": 14.829049147084648,
+      "0.75": 12.374714871510605,
+      "0.9": 7.68433049782217,
+      "0.95": 4.956088059884198
+    },
+    "coverage": 0.8024263431542461,
+    "coverage_target": 0.8,
+    "mean_interval_width_kg": 93.21692175839037,
+    "mean_interval_width_pct": 0.724271214048199
+  },
+  "baselines": {
+    "seasonal_naive_7": {
+      "wape": 0.4328047024721765,
+      "mae": 59.7050926594981,
+      "n": 435
+    },
+    "same_weekday_median": {
+      "wape": 0.33368516771392026,
+      "mae": 46.03162521955392,
+      "n": 435
+    }
+  },
+  "policy_backtest": {
+    "cost_under_kg": 3.0,
+    "cost_over_kg": 1.0,
+    "newsvendor_quantile": 0.75,
+    "service_level_target": 0.9,
+    "recommended_quantile": 0.9,
+    "operating_point_set_by": "service_floor",
+    "implied_cu_over_co": 9.0,
+    "n_rows": 435,
+    "kg_surplus_historical": 70029.55907803382,
+    "kg_surplus_with_plan": 15671.948797468556,
+    "kg_surplus_avoided": 54357.61028056527,
+    "kg_surplus_avoided_pct": 77.62095177551335,
+    "kg_surplus_avoided_per_week": 874.7201654343836,
+    "shortage_days_historical": 0,
+    "shortage_days_with_plan": 52,
+    "shortage_rate_with_plan": 0.11954022988505747,
+    "service_level_historical": 1.0,
+    "service_level_with_plan": 0.8804597701149426,
+    "expected_cost_historical": 70029.55907803382,
+    "expected_cost_with_plan": 19032.584670172197,
+    "expected_cost_saving": 50996.974407861635,
+    "surplus_risk_mix": {
+      "HIGH": 0.05919540229885058,
+      "LOW": 0.7350574712643678,
+      "MEDIUM": 0.2057471264367816
+    },
+    "frontier": [
+      {
+        "quantile": 0.5,
+        "implied_cu_over_co": 1.0,
+        "kg_surplus": 5035.1911204292655,
+        "shortage_days": 214,
+        "expected_cost": 22310.27744878444,
+        "is_cost_optimal": false
+      },
+      {
+        "quantile": 0.6,
+        "implied_cu_over_co": 1.5,
+        "kg_surplus": 6865.2456329865545,
+        "shortage_days": 177,
+        "expected_cost": 19212.101460087495,
+        "is_cost_optimal": false
+      },
+      {
+        "quantile": 0.7,
+        "implied_cu_over_co": 2.33,
+        "kg_surplus": 8795.786067909106,
+        "shortage_days": 130,
+        "expected_cost": 17557.708564744193,
+        "is_cost_optimal": false
+      },
+      {
+        "quantile": 0.75,
+        "implied_cu_over_co": 3.0,
+        "kg_surplus": 10276.006024989932,
+        "shortage_days": 108,
+        "expected_cost": 17227.551969711836,
+        "is_cost_optimal": true
+      },
+      {
+        "quantile": 0.8,
+        "implied_cu_over_co": 4.0,
+        "kg_surplus": 11968.865025244655,
+        "shortage_days": 85,
+        "expected_cost": 17406.07517424602,
+        "is_cost_optimal": false
+      },
+      {
+        "quantile": 0.85,
+        "implied_cu_over_co": 5.67,
+        "kg_surplus": 13774.693032883399,
+        "shortage_days": 65,
+        "expected_cost": 18036.474408316284,
+        "is_cost_optimal": false
+      },
+      {
+        "quantile": 0.9,
+        "implied_cu_over_co": 9.0,
+        "kg_surplus": 15671.948797468556,
+        "shortage_days": 52,
+        "expected_cost": 19032.584670172197,
+        "is_cost_optimal": false
+      },
+      {
+        "quantile": 0.95,
+        "implied_cu_over_co": 19.0,
+        "kg_surplus": 19080.70830465786,
+        "shortage_days": 40,
+        "expected_cost": 20915.167126139473,
+        "is_cost_optimal": false
+      }
+    ],
+    "caveat": "SYNTHETIC simulator data unless data_source says REAL. A score here shows the pipeline recovers the signals the simulator encodes; it is not evidence about a real kitchen."
+  },
+  "rolling_cv": [
+    {
+      "fold": 0,
+      "n_train": 701,
+      "n_val": 56,
+      "wape": 0.19611029803303534,
+      "coverage": 0.8214285714285714
+    },
+    {
+      "fold": 1,
+      "n_train": 1325,
+      "n_val": 54,
+      "wape": 0.2179375546120624,
+      "coverage": 0.8148148148148148
+    },
+    {
+      "fold": 2,
+      "n_train": 1932,
+      "n_val": 57,
+      "wape": 0.239388951876507,
+      "coverage": 0.8245614035087719
+    },
+    {
+      "fold": 3,
+      "n_train": 2551,
+      "n_val": 57,
+      "wape": 0.16540156627520802,
+      "coverage": 0.8245614035087719
+    },
+    {
+      "fold": 4,
+      "n_train": 3171,
+      "n_val": 57,
+      "wape": 0.17788800487837422,
+      "coverage": 0.8245614035087719
+    }
+  ],
+  "promotion_gate": {
+    "pass": true,
+    "failures": [],
+    "holdout_wape": 0.17986877412900193,
+    "best_baseline_wape": 0.33368516771392026,
+    "relative_to_baseline": 0.5390373667528717,
+    "criteria": {
+      "max_relative_wape_vs_baseline": 0.85,
+      "coverage_band": [
+        0.75,
+        0.85
+      ],
+      "max_slice_regression": 0.05,
+      "max_latency_ms": 50.0,
+      "min_surplus_avoided_pct": 25.0,
+      "max_shortage_rate": 0.12
+    }
+  },
+  "oracle_diagnostic": {
+    "available": true,
+    "oracle_wape": 0.0,
+    "expected_attendance_only_wape": 0.9324489520755024,
+    "note": "the oracle sees realised attendance; it is not available when the production decision is made, so it bounds the achievable error rather than competing with the model",
+    "model_wape": 0.17986877412900193,
+    "gap_to_oracle": null,
+    "interpretation": "consumption is an exact function of realised attendance in this simulator, so effectively all of the remaining error is turnout noise, which no night-before forecast can remove"
+  },
+  "hyperparameters": {
+    "n_estimators": 600,
+    "learning_rate": 0.03,
+    "num_leaves": 63
+  },
+  "seed": 42,
+  "coverage_target": 0.8,
+  "cost_under": 3.0,
+  "cost_over": 1.0,
+  "service_level": 0.9,
+  "data_source": [
+    "SYNTHETIC"
+  ],
+  "holdout_days": 56,
+  "caveat": "SYNTHETIC simulator data unless data_source says REAL. A score here shows the pipeline recovers the signals the simulator encodes; it is not evidence about a real kitchen."
+}

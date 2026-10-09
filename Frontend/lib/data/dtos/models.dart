@@ -567,10 +567,10 @@ class QrEvent {
   });
 
   factory QrEvent.fromJson(Map<String, dynamic> json) => QrEvent(
-    eventType: json['event_type'] as String,
-    timestamp: json['timestamp'] as String,
+    eventType: (json['event_type'] ?? 'UNKNOWN').toString(),
+    timestamp: (json['timestamp'] ?? json['server_ts'] ?? json['server_ts_iso'] ?? json['created_at'] ?? DateTime.now().toUtc().toIso8601String()).toString(),
     hash: json['hash'] as String? ?? '',
     prevHash: json['prev_hash'] as String? ?? '',
-    clientTs: json['client_ts'] as String?,
+    clientTs: json['client_ts']?.toString() ?? json['captured_at']?.toString(),
   );
 }

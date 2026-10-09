@@ -29,6 +29,8 @@ class SignupRequest {
   /// Only used by KITCHEN and NGO signups; the backend provisions the
   /// organisation plus the kitchen or recipient row from these.
   final String? organisationName;
+  final double? latitude;
+  final double? longitude;
 
   const SignupRequest({
     required this.name,
@@ -36,6 +38,8 @@ class SignupRequest {
     required this.password,
     required this.role,
     this.organisationName,
+    this.latitude,
+    this.longitude,
   });
 
   Map<String, dynamic> toJson() => {
@@ -45,6 +49,8 @@ class SignupRequest {
     'role': role.apiValue,
     if (organisationName != null && organisationName!.isNotEmpty)
       'organisation_name': organisationName,
+    if (latitude != null) 'latitude': latitude,
+    if (longitude != null) 'longitude': longitude,
   };
 }
 

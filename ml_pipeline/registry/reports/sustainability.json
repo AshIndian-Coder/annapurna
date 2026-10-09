@@ -1,0 +1,21 @@
+{
+  "kg_waste_prevented": 0.0,
+  "kg_redistributed": 85906.26494703238,
+  "kg_disposed": 200447.95154307556,
+  "waste_diversion_rate": 0.3,
+  "meals_redistributed": 245446.4712772354,
+  "co2e_kg_avoided": 214765.66236758095,
+  "cost_saved_inr": 5154375.896821943,
+  "water_litre_avoided": null,
+  "assumptions": [
+    "UNVERIFIED factor co2e_kg_per_kg_food_waste_avoided = 2.5 (source: None)",
+    "UNVERIFIED factor cost_inr_per_kg_surplus = 60 (source: None)"
+  ],
+  "portion_kg": 0.35,
+  "mode": "DEMO (SYNTHETIC)",
+  "definitions": {
+    "kg_waste_prevented": "kg_prevented",
+    "avoided_for_emissions": "kg_prevented + kg_redistributed (both keep food out of the waste stream; no double counting)",
+    "meals_redistributed": "kg_redistributed / portion_kg"
+  }
+}

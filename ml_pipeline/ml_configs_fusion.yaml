@@ -1,0 +1,37 @@
+# Safety / shelf-life configuration.
+# [FSSAI] = taken from FSSAI / FoSTaC documents found on 02 Oct 2026. Re-verify before quoting them to judges.
+# [ASSUMPTION] = my placeholder. A food technologist should review it before any real use.
+
+danger_zone_c: [5, 60]            # [FSSAI FoSTaC manuals] growth zone 5-60 C
+fastest_growth_c: [21, 51]        # [FSSAI FoSTaC catering manual] most rapid growth 21-51 C
+hot_hold_min_c: 60                # [FSSAI] hot holding at 60 C or above
+cold_hold_max_c: 5                # [FSSAI] cold holding at 5 C or below
+danger_minutes_hold: 120          # [FSSAI checklist] cooked food not left at room temperature > 2 h  -> HOLD/RISK reason
+danger_minutes_reject: 240        # [ASSUMPTION] matches the master spec's 240 min budget -> hard REJECT
+
+# Relative rate at which the "safe-time budget" is used up, by temperature band. [ASSUMPTION]
+rate_multiplier:
+  hot_hold: 0.10
+  chilled: 0.05
+  fast_growth: 1.00
+  other_danger: 0.60
+
+humidity:
+  threshold_pct: 65               # [FSSAI FoSTaC] food zones should stay below 65 % humidity
+  slope_per_pct: 0.01             # [ASSUMPTION] +1 % budget use per % above threshold
+
+# budget_hours = hours in fast-growth conditions before the food is unsafe. [ASSUMPTION for every category]
+categories:
+  rice_dal:      {budget_hours: 6,  risk: 0.60}
+  cooked_veg:    {budget_hours: 6,  risk: 0.50}
+  non_veg_curry: {budget_hours: 4,  risk: 0.90}
+  dairy_based:   {budget_hours: 4,  risk: 0.80}
+  bread_roti:    {budget_hours: 10, risk: 0.30}
+  fried_snack:   {budget_hours: 12, risk: 0.20}
+  raw_salad:     {budget_hours: 3,  risk: 0.70}
+  sweets:        {budget_hours: 24, risk: 0.20}
+
+targets:
+  unsafe_recall: 0.98             # share of truly unsafe batches that must NOT be auto-accepted
+  lower_bound_coverage: 0.95      # share of batches whose true remaining safe time >= reported lower bound
+  max_hours_left: 72

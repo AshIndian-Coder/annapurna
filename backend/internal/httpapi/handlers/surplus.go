@@ -11,12 +11,13 @@ import (
 )
 
 type SurplusHandler struct {
-	surplus *services.SurplusService
-	approve *services.ApproveService
+	surplus  *services.SurplusService
+	approve  *services.ApproveService
+	matchSvc *services.MatchingService
 }
 
-func NewSurplusHandler(s *services.SurplusService, a *services.ApproveService) *SurplusHandler {
-	return &SurplusHandler{surplus: s, approve: a}
+func NewSurplusHandler(s *services.SurplusService, a *services.ApproveService, m *services.MatchingService) *SurplusHandler {
+	return &SurplusHandler{surplus: s, approve: a, matchSvc: m}
 }
 
 // Create handles POST /surplus → 201 with the new batch in PENDING_SAFETY.
@@ -39,6 +40,10 @@ func (h *SurplusHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		renderServiceError(w, err)
 		return
+	}
+
+	if h.matchSvc != nil {
+		_, _ = h.matchSvc.Match(r.Context(), batch.ID, 5, claims.KitchenID)
 	}
 
 	w.Header().Set("Content-Type", "application/json")

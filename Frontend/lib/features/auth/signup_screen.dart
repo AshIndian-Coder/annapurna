@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:geolocator/geolocator.dart';
 import '../../core/enums.dart';
 import '../../core/theme/app_colors.dart';
 import '../../data/services/auth_service.dart';
@@ -26,9 +27,12 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
   final _organisationController = TextEditingController();
+  final _latController = TextEditingController(text: '28.6139');
+  final _lngController = TextEditingController(text: '77.2090');
 
   UserRole _role = UserRole.kitchen;
   bool _obscurePassword = true;
+  bool _gettingLocation = false;
 
   @override
   void dispose() {
@@ -37,6 +41,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     _passwordController.dispose();
     _confirmController.dispose();
     _organisationController.dispose();
+    _latController.dispose();
+    _lngController.dispose();
     super.dispose();
   }
 
@@ -46,6 +52,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   void _submit() {
     FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) return;
+    
+    double? lat = double.tryParse(_latController.text);
+    double? lng = double.tryParse(_lngController.text);
+
     ref.read(authProvider.notifier).register(
           SignupRequest(
             name: _nameController.text.trim(),
@@ -53,6 +63,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             password: _passwordController.text,
             role: _role,
             organisationName: _organisationController.text.trim(),
+            latitude: lat ?? 28.6139,
+            longitude: lng ?? 77.2090,
           ),
         );
   }
@@ -175,6 +187,59 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   helperStyle: const TextStyle(color: AppColors.textMuted, fontSize: 12),
                 ),
               ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _latController,
+                      enabled: !authState.isLoading,
+                      keyboardType: TextInputType.number,
+                      style: const TextStyle(color: AppColors.textPrimary),
+                      decoration: const InputDecoration(
+                        labelText: 'Latitude',
+                        prefixIcon: Icon(Icons.location_on_outlined, color: AppColors.textMuted),
+                      ),
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Required';
+                        if (double.tryParse(v) == null) return 'Invalid';
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _lngController,
+                      enabled: !authState.isLoading,
+                      keyboardType: TextInputType.number,
+                      style: const TextStyle(color: AppColors.textPrimary),
+                      decoration: const InputDecoration(
+                        labelText: 'Longitude',
+                        prefixIcon: Icon(Icons.location_on_outlined, color: AppColors.textMuted),
+                      ),
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Required';
+                        if (double.tryParse(v) == null) return 'Invalid';
+                        return null;
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton.icon(
+                    onPressed: _gettingLocation ? null : _getLocation,
+                    icon: _gettingLocation 
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.my_location, size: 16),
+                    label: Text(_gettingLocation ? 'Locating...' : 'Use Current Location'),
+                  ),
+                ],
+              ),
             ],
             const SizedBox(height: 24),
             AuthSubmitButton(
@@ -196,6 +261,45 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _getLocation() async {
+    setState(() => _gettingLocation = true);
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        throw Exception('Location services are disabled.');
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw Exception('Location permissions are denied');
+        }
+      }
+      
+      if (permission == LocationPermission.deniedForever) {
+        throw Exception('Location permissions are permanently denied.');
+      } 
+
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high
+      );
+      
+      if (mounted) {
+        setState(() {
+          _latController.text = position.latitude.toStringAsFixed(6);
+          _lngController.text = position.longitude.toStringAsFixed(6);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    } finally {
+      if (mounted) setState(() => _gettingLocation = false);
+    }
   }
 
   String? _validatePassword(String? value) {

@@ -13,7 +13,7 @@ class NgoShell extends StatefulWidget {
 class _NgoShellState extends State<NgoShell> {
   int _currentIndex = 0;
 
-  static const _routes = ['/ngo', '/ngo/history', '/ngo/scan'];
+  static const _routes = ['/ngo', '/ngo/history'];
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +38,6 @@ class _NgoShellState extends State<NgoShell> {
           destinations: const [
             NavigationDestination(icon: Icon(Icons.local_offer_outlined), selectedIcon: Icon(Icons.local_offer), label: 'Offers'),
             NavigationDestination(icon: Icon(Icons.history_outlined), selectedIcon: Icon(Icons.history), label: 'History'),
-            NavigationDestination(icon: Icon(Icons.qr_code_scanner_outlined), selectedIcon: Icon(Icons.qr_code_scanner), label: 'Scan'),
           ],
         ),
       ),

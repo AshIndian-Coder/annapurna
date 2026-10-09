@@ -1,0 +1,341 @@
+{
+  "model": "vit_small_patch14_dinov2.lvd142m",
+  "head": "torch-linear AdamW lr=0.001 wd=1e-2 ls=0.05 epochs=24/30",
+  "temperature": 0.3202892541885376,
+  "tau_from_val": 0.8973444243340644,
+  "tau_reject_from_val": 0.9982042261212447,
+  "target_unsafe_recall": 0.98,
+  "arch": "vit_small_patch14_dinov2.lvd142m+linear-probe",
+  "size": 224,
+  "absent_class_bias": -30.0,
+  "classes_absent_from_train": [
+    "RISK",
+    "NOT_FOOD"
+  ],
+  "val": {
+    "n": 2317,
+    "macro_f1": 0.9941129505901024,
+    "accuracy": 0.9943892965041001,
+    "unsafe_recall": 0.9801980198019802,
+    "false_accepts": 18,
+    "good_auto_accept_rate": 0.9985795454545454,
+    "not_food_recall": null,
+    "nll": 0.018322066406855804,
+    "ece": 0.0024643436950187634,
+    "tau": 0.8973444243340644,
+    "tau_reject": 0.9982042261212447,
+    "actions": {
+      "auto_accept": 1424,
+      "risk_hold": 74,
+      "reject": 819
+    },
+    "risk_hold_rate": 0.031937850668968495,
+    "risk_zone_recall": null,
+    "reject_recall": 0.900990099009901,
+    "per_class_recall": {
+      "GOOD": 0.9964488636363636,
+      "RISK": null,
+      "REJECTED": 0.9911991199119912,
+      "NOT_FOOD": null
+    },
+    "confusion": {
+      "GOOD": {
+        "GOOD": 1403,
+        "RISK": 0,
+        "REJECTED": 5,
+        "NOT_FOOD": 0
+      },
+      "RISK": {
+        "GOOD": 0,
+        "RISK": 0,
+        "REJECTED": 0,
+        "NOT_FOOD": 0
+      },
+      "REJECTED": {
+        "GOOD": 8,
+        "RISK": 0,
+        "REJECTED": 901,
+        "NOT_FOOD": 0
+      },
+      "NOT_FOOD": {
+        "GOOD": 0,
+        "RISK": 0,
+        "REJECTED": 0,
+        "NOT_FOOD": 0
+      }
+    },
+    "meets_recall_target": true
+  },
+  "cuda": {
+    "available": true,
+    "name": "NVIDIA GeForce RTX 5050 Laptop GPU",
+    "capability": "12.0",
+    "total_vram_gb": 7.93,
+    "bf16_supported": true,
+    "device_count": 1
+  },
+  "fingerprint": "12c7398cecb7e59a",
+  "head_training": {
+    "epochs_run": 24,
+    "steps": 1248,
+    "lr": 0.001,
+    "head_bs": 256,
+    "warmup_steps": 50,
+    "label_smoothing": 0.05,
+    "weight_decay": 0.01,
+    "best_val_macro_f1": 0.99411,
+    "early_stopped": true,
+    "resumed_from_epoch": 24,
+    "history": [
+      {
+        "epoch": 1,
+        "train_loss": 0.74502,
+        "train_acc": 0.6826,
+        "val_loss": 0.24989,
+        "val_macro_f1": 0.91946,
+        "val_acc": 0.9219
+      },
+      {
+        "epoch": 2,
+        "train_loss": 0.19392,
+        "train_acc": 0.9543,
+        "val_loss": 0.16513,
+        "val_macro_f1": 0.96744,
+        "val_acc": 0.9689
+      },
+      {
+        "epoch": 3,
+        "train_loss": 0.15628,
+        "train_acc": 0.9724,
+        "val_loss": 0.14482,
+        "val_macro_f1": 0.97833,
+        "val_acc": 0.9793
+      },
+      {
+        "epoch": 4,
+        "train_loss": 0.14208,
+        "train_acc": 0.9803,
+        "val_loss": 0.13477,
+        "val_macro_f1": 0.98508,
+        "val_acc": 0.9858
+      },
+      {
+        "epoch": 5,
+        "train_loss": 0.13396,
+        "train_acc": 0.9835,
+        "val_loss": 0.12968,
+        "val_macro_f1": 0.98421,
+        "val_acc": 0.9849
+      },
+      {
+        "epoch": 6,
+        "train_loss": 0.12881,
+        "train_acc": 0.9859,
+        "val_loss": 0.12538,
+        "val_macro_f1": 0.98689,
+        "val_acc": 0.9875
+      },
+      {
+        "epoch": 7,
+        "train_loss": 0.12467,
+        "train_acc": 0.988,
+        "val_loss": 0.12215,
+        "val_macro_f1": 0.98915,
+        "val_acc": 0.9896
+      },
+      {
+        "epoch": 8,
+        "train_loss": 0.1214,
+        "train_acc": 0.9897,
+        "val_loss": 0.11966,
+        "val_macro_f1": 0.98959,
+        "val_acc": 0.9901
+      },
+      {
+        "epoch": 9,
+        "train_loss": 0.11919,
+        "train_acc": 0.9903,
+        "val_loss": 0.11841,
+        "val_macro_f1": 0.9923,
+        "val_acc": 0.9927
+      },
+      {
+        "epoch": 10,
+        "train_loss": 0.11746,
+        "train_acc": 0.9914,
+        "val_loss": 0.11771,
+        "val_macro_f1": 0.9896,
+        "val_acc": 0.9901
+      },
+      {
+        "epoch": 11,
+        "train_loss": 0.11582,
+        "train_acc": 0.9919,
+        "val_loss": 0.11547,
+        "val_macro_f1": 0.99276,
+        "val_acc": 0.9931
+      },
+      {
+        "epoch": 12,
+        "train_loss": 0.11441,
+        "train_acc": 0.9923,
+        "val_loss": 0.11471,
+        "val_macro_f1": 0.99366,
+        "val_acc": 0.994
+      },
+      {
+        "epoch": 13,
+        "train_loss": 0.11321,
+        "train_acc": 0.9928,
+        "val_loss": 0.1142,
+        "val_macro_f1": 0.9923,
+        "val_acc": 0.9927
+      },
+      {
+        "epoch": 14,
+        "train_loss": 0.11272,
+        "train_acc": 0.9929,
+        "val_loss": 0.1133,
+        "val_macro_f1": 0.99186,
+        "val_acc": 0.9922
+      },
+      {
+        "epoch": 15,
+        "train_loss": 0.11157,
+        "train_acc": 0.9935,
+        "val_loss": 0.1126,
+        "val_macro_f1": 0.99231,
+        "val_acc": 0.9927
+      },
+      {
+        "epoch": 16,
+        "train_loss": 0.11085,
+        "train_acc": 0.994,
+        "val_loss": 0.11201,
+        "val_macro_f1": 0.99411,
+        "val_acc": 0.9944
+      },
+      {
+        "epoch": 17,
+        "train_loss": 0.11022,
+        "train_acc": 0.9941,
+        "val_loss": 0.1118,
+        "val_macro_f1": 0.99276,
+        "val_acc": 0.9931
+      },
+      {
+        "epoch": 18,
+        "train_loss": 0.10966,
+        "train_acc": 0.9944,
+        "val_loss": 0.11164,
+        "val_macro_f1": 0.99366,
+        "val_acc": 0.994
+      },
+      {
+        "epoch": 19,
+        "train_loss": 0.10949,
+        "train_acc": 0.9943,
+        "val_loss": 0.11094,
+        "val_macro_f1": 0.99321,
+        "val_acc": 0.9935
+      },
+      {
+        "epoch": 20,
+        "train_loss": 0.10893,
+        "train_acc": 0.9946,
+        "val_loss": 0.11094,
+        "val_macro_f1": 0.99231,
+        "val_acc": 0.9927
+      },
+      {
+        "epoch": 21,
+        "train_loss": 0.10853,
+        "train_acc": 0.9945,
+        "val_loss": 0.11083,
+        "val_macro_f1": 0.99366,
+        "val_acc": 0.994
+      },
+      {
+        "epoch": 22,
+        "train_loss": 0.10827,
+        "train_acc": 0.9945,
+        "val_loss": 0.11041,
+        "val_macro_f1": 0.99366,
+        "val_acc": 0.994
+      },
+      {
+        "epoch": 23,
+        "train_loss": 0.10811,
+        "train_acc": 0.9947,
+        "val_loss": 0.11024,
+        "val_macro_f1": 0.99366,
+        "val_acc": 0.994
+      },
+      {
+        "epoch": 24,
+        "train_loss": 0.10792,
+        "train_acc": 0.9947,
+        "val_loss": 0.11015,
+        "val_macro_f1": 0.99366,
+        "val_acc": 0.994
+      }
+    ]
+  },
+  "test_unseen_sources": {
+    "n": 4826,
+    "macro_f1": 0.0,
+    "accuracy": 0.0,
+    "unsafe_recall": null,
+    "false_accepts": null,
+    "good_auto_accept_rate": null,
+    "not_food_recall": 0.0,
+    "nll": 27.63102111592855,
+    "ece": 0.9682091833722457,
+    "tau": 0.8973444243340644,
+    "tau_reject": 0.9982042261212447,
+    "actions": {
+      "auto_accept": 4306,
+      "risk_hold": 284,
+      "reject": 236
+    },
+    "risk_hold_rate": 0.05884790716949855,
+    "risk_zone_recall": null,
+    "reject_recall": null,
+    "per_class_recall": {
+      "GOOD": null,
+      "RISK": null,
+      "REJECTED": null,
+      "NOT_FOOD": 0.0
+    },
+    "confusion": {
+      "GOOD": {
+        "GOOD": 0,
+        "RISK": 0,
+        "REJECTED": 0,
+        "NOT_FOOD": 0
+      },
+      "RISK": {
+        "GOOD": 0,
+        "RISK": 0,
+        "REJECTED": 0,
+        "NOT_FOOD": 0
+      },
+      "REJECTED": {
+        "GOOD": 0,
+        "RISK": 0,
+        "REJECTED": 0,
+        "NOT_FOOD": 0
+      },
+      "NOT_FOOD": {
+        "GOOD": 4097,
+        "RISK": 0,
+        "REJECTED": 729,
+        "NOT_FOOD": 0
+      }
+    },
+    "meets_recall_target": null
+  },
+  "test_sources": [
+    "snacks"
+  ]
+}

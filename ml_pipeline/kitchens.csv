@@ -1,0 +1,13 @@
+kitchen_id,city,kitchen_type,capacity_meals_day,lat,lon,overproduction_bias,hygiene_baseline,has_temp_logger,has_voc_sensor
+K01,Mumbai,corporate_canteen,2500,19.1136,72.8697,0.1,86,1,1
+K02,Mumbai,hotel_banquet,1800,18.933,72.835,0.18,90,1,1
+K03,Pune,hostel_mess,1500,18.5074,73.8077,0.14,74,0,0
+K04,Pune,cloud_kitchen,900,18.5912,73.7389,0.09,80,1,0
+K05,Delhi,hospital_kitchen,1200,28.5672,77.21,0.07,92,1,1
+K06,Delhi,central_kitchen,6000,28.5355,77.275,0.06,93,1,1
+K07,Bengaluru,corporate_canteen,3000,12.9698,77.75,0.11,88,1,0
+K08,Bengaluru,restaurant,700,12.9784,77.6408,0.16,78,0,0
+K09,Hyderabad,school_midday,2500,17.4399,78.4983,0.12,70,0,0
+K10,Chennai,hostel_mess,1800,13.0067,80.2206,0.15,72,0,0
+K11,Kolkata,hotel_banquet,1500,22.5535,88.352,0.2,82,1,0
+K12,Ahmedabad,central_kitchen,5000,23.0963,72.655,0.07,89,1,1

@@ -1,0 +1,41 @@
+# Image pipeline (GPU) requirements -- the spoilage classifier, its export and its bundle.
+#
+# The demo laptop is an RTX 5050 (Blackwell, sm_120), so torch must be built for CUDA 12.8.
+# Install torch FIRST from the cu128 index, then this file:
+#
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+#   pip install -r ml_requirements-cv.txt
+#
+# Verify before anything else:
+#   python -c "import torch; print(torch.__version__, torch.cuda.is_available(), torch.cuda.get_device_name(0))"
+#
+# 8 GB VRAM is enough. ml_cv_train_cls.py --bs auto fits the batch size to the card and
+# halves it on OOM, so the defaults below are a starting point, not a requirement.
+
+timm>=1.0              # EfficientNet-Lite0 (primary) and DINOv2-S/14 (teacher)
+torch>=2.4             # the cu128 wheel above; do not let pip replace it
+torchvision>=0.19
+scikit-learn>=1.4
+scikit-image>=0.22     # only if you add morphological cleanup to the gate
+numpy>=1.26
+pandas>=2.1
+pillow>=10.0
+joblib>=1.3
+
+# -- export and the D21 parity gate -----------------------------------------
+onnx>=1.16             # static quantisation of the server artifact
+onnxruntime>=1.18      # runs2 it, and provides the quantiser
+onnxscript>=0.1        # REQUIRED by torch >= 2.5 for torch.onnx.export -- omit it and
+                       # the export dies with ModuleNotFoundError after doing the work
+
+# -- optional: the device (TFLite) artifact ---------------------------------
+# Flutter's flutter_litert needs a TFLite int8 model, and there is no first-class
+# PyTorch-to-TFLite route. ml_cv_export.py tries these in order and records which one
+# produced the file:
+#   litert-torch>=0.4     Google's official converter. Beta. Has an OPEN MobileNetV3
+#                         int8 bug (google-ai-edge/litert-torch#499), so the D21 parity
+#                         gate is the only thing between that bug and a shipped model.
+#   onnx2tf>=1.10         ONNX -> TF SavedModel -> TFLite. Community-maintained.
+#   tensorflow>=2.16      needed by either of the two above.
+# With neither installed the export still produces the server artifacts and REFUSES to
+# write a complete bundle -- ml_cv_export.py --require-device exits non-zero.

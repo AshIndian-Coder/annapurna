@@ -1,0 +1,1192 @@
+[
+  {
+    "epoch": 0,
+    "global_step": 453,
+    "which": "ema",
+    "train": {
+      "loss": 0.8541040352098105,
+      "train_acc": 0.5334348819497334,
+      "n": 13130,
+      "last_loss": 0.6860387325286865,
+      "last_lr": 0.0005011037527593819,
+      "last_eval_step": 0,
+      "resumed_from_step": null,
+      "resumed_from_epoch": null,
+      "resumed_from_batch": null
+    },
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.4365908347231092,
+      "accuracy": 0.842468709538196,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 0.5355113636363636,
+      "not_food_recall": null,
+      "nll": 0.4401071517129563,
+      "ece": 0.019734807661441606,
+      "tau": 0.1600481152148988,
+      "per_class_recall": {
+        "GOOD": 0.8295454545454546,
+        "RISK": null,
+        "REJECTED": 0.8624862486248625,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1168,
+          "RISK": 67,
+          "REJECTED": 109,
+          "NOT_FOOD": 64
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 90,
+          "RISK": 20,
+          "REJECTED": 784,
+          "NOT_FOOD": 15
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 1.1203261613845825,
+      "selection": 4.892894277567393
+    },
+    "peak_mem_mb": 1269.76123046875,
+    "elapsed_min": 2.713246202468872,
+    "epoch_seconds": 162.79476308822632,
+    "test_sources": [
+      "snacks"
+    ],
+    "lr": 0.0005011037527593819
+  },
+  {
+    "epoch": 1,
+    "global_step": 906,
+    "which": "ema",
+    "train": {
+      "loss": 0.5874328649166606,
+      "train_acc": 0.6670982482863671,
+      "n": 13130,
+      "last_loss": 0.4871329665184021,
+      "last_lr": 0.0010011037527593819,
+      "last_eval_step": 500,
+      "resumed_from_step": null,
+      "resumed_from_epoch": null,
+      "resumed_from_batch": null
+    },
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.4675897167844504,
+      "accuracy": 0.9128182995252482,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 0.7741477272727273,
+      "not_food_recall": null,
+      "nll": 0.25260735324682143,
+      "ece": 0.012364954141312053,
+      "tau": 0.16244911448507116,
+      "per_class_recall": {
+        "GOOD": 0.9240056818181818,
+        "RISK": null,
+        "REJECTED": 0.8954895489548955,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1301,
+          "RISK": 29,
+          "REJECTED": 34,
+          "NOT_FOOD": 44
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 48,
+          "RISK": 27,
+          "REJECTED": 814,
+          "NOT_FOOD": 20
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.7765531539916992,
+      "selection": 5.162529523265099
+    },
+    "peak_mem_mb": 1259.8046875,
+    "elapsed_min": 5.851387731234232,
+    "epoch_seconds": 188.15574383735657,
+    "test_sources": [
+      "snacks"
+    ],
+    "lr": 0.0010011037527593819
+  },
+  {
+    "epoch": 2,
+    "global_step": 1359,
+    "which": "raw",
+    "train": {
+      "loss": 0.4742980323260918,
+      "train_acc": 0.7130997715156131,
+      "n": 13130,
+      "last_loss": 0.30975013971328735,
+      "last_lr": 0.0029999999999999996,
+      "last_eval_step": 1000,
+      "resumed_from_step": null,
+      "resumed_from_epoch": null,
+      "resumed_from_batch": null
+    },
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.47062468725263135,
+      "accuracy": 0.9244712990936556,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 0.8892045454545454,
+      "not_food_recall": null,
+      "nll": 0.22756230562152063,
+      "ece": 0.013059714576873585,
+      "tau": 0.3153912423471317,
+      "per_class_recall": {
+        "GOOD": 0.9360795454545454,
+        "RISK": null,
+        "REJECTED": 0.9064906490649065,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1318,
+          "RISK": 27,
+          "REJECTED": 40,
+          "NOT_FOOD": 23
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 40,
+          "RISK": 27,
+          "REJECTED": 824,
+          "NOT_FOOD": 18
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.4781889319419861,
+      "selection": 5.280621311915098
+    },
+    "peak_mem_mb": 1258.9345703125,
+    "elapsed_min": 8.805897581577302,
+    "epoch_seconds": 177.13845539093018,
+    "test_sources": [
+      "snacks"
+    ],
+    "lr": 0.0029999999999999996
+  },
+  {
+    "epoch": 3,
+    "global_step": 1812,
+    "which": "raw",
+    "train": {
+      "loss": 0.29755047642585436,
+      "train_acc": 0.8272658035034273,
+      "n": 13130,
+      "last_loss": 0.3264373540878296,
+      "last_lr": 0.002989958961246785,
+      "last_eval_step": 1500,
+      "resumed_from_step": null,
+      "resumed_from_epoch": null,
+      "resumed_from_batch": null
+    },
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.9931910256719196,
+      "accuracy": 0.9935261113508848,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 0.01793555259313431,
+      "ece": 0.0023498816040751387,
+      "tau": 0.6396304199217442,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 0.9834983498349835,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 15,
+          "RISK": 0,
+          "REJECTED": 894,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.25139543414115906,
+      "selection": 5.91398310487984
+    },
+    "peak_mem_mb": 1300.75,
+    "elapsed_min": 11.797403454780579,
+    "epoch_seconds": 179.36494779586792,
+    "test_sources": [
+      "snacks"
+    ],
+    "lr": 0.002989958961246785
+  },
+  {
+    "epoch": 4,
+    "global_step": 2265,
+    "which": "raw",
+    "train": {
+      "loss": 0.2736618616861509,
+      "train_acc": 0.8498095963442498,
+      "n": 13130,
+      "last_loss": 0.2548707127571106,
+      "last_lr": 0.002959971632811038,
+      "last_eval_step": 2000,
+      "resumed_from_step": null,
+      "resumed_from_epoch": null,
+      "resumed_from_batch": null
+    },
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.9986414501361776,
+      "accuracy": 0.998705222270177,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 0.003674059918123463,
+      "ece": 0.0008754707371857477,
+      "tau": 0.9993148504444017,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 0.9966996699669967,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 3,
+          "RISK": 0,
+          "REJECTED": 906,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.226273775100708,
+      "selection": 5.919433529344098
+    },
+    "peak_mem_mb": 1304.0458984375,
+    "elapsed_min": 15.262596786022186,
+    "epoch_seconds": 207.7430863380432,
+    "test_sources": [
+      "snacks"
+    ],
+    "lr": 0.002959971632811038
+  },
+  {
+    "epoch": 5,
+    "global_step": 2718,
+    "which": "raw",
+    "train": {
+      "loss": 0.2699126130396958,
+      "train_acc": 0.848971820258949,
+      "n": 13130,
+      "last_loss": 0.3247200846672058,
+      "last_lr": 0.0029104435418670738,
+      "last_eval_step": 2500,
+      "resumed_from_step": null,
+      "resumed_from_epoch": null,
+      "resumed_from_batch": null
+    },
+    "val": {
+      "n": 2317,
+      "macro_f1": 1.0,
+      "accuracy": 1.0,
+      "unsafe_recall": 0.9988998899889989,
+      "false_accepts": 1,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 8.07101780558071e-08,
+      "ece": 8.070263179948967e-08,
+      "tau": 1.0,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.018315639346837997,
+      "selection": 5.995599559955996
+    },
+    "peak_mem_mb": 1304.0458984375,
+    "elapsed_min": 19.43090256055196,
+    "epoch_seconds": 249.89595937728882,
+    "test_sources": [
+      "snacks"
+    ],
+    "lr": 0.0029104435418670738
+  },
+  {
+    "epoch": 6,
+    "global_step": 3171,
+    "which": "raw",
+    "train": {
+      "loss": 0.2686956618852227,
+      "train_acc": 0.8467631378522468,
+      "n": 13130,
+      "last_loss": 0.2234281301498413,
+      "last_lr": 0.002842044470880267,
+      "last_eval_step": 3000,
+      "resumed_from_step": null,
+      "resumed_from_epoch": null,
+      "resumed_from_batch": null
+    },
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.9990948313581358,
+      "accuracy": 0.9991368148467846,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 0.006361688268207841,
+      "ece": 0.001223908545713355,
+      "tau": 0.9993792118215105,
+      "per_class_recall": {
+        "GOOD": 0.9992897727272727,
+        "RISK": null,
+        "REJECTED": 0.9988998899889989,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1407,
+          "RISK": 0,
+          "REJECTED": 1,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 1,
+          "RISK": 0,
+          "REJECTED": 908,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.25024503469467163,
+      "selection": 5.919886910566056
+    },
+    "peak_mem_mb": 1304.0458984375,
+    "elapsed_min": 23.37291230758031,
+    "epoch_seconds": 236.24833726882935,
+    "test_sources": [
+      "snacks"
+    ],
+    "lr": 0.002842044470880267
+  },
+  {
+    "epoch": 7,
+    "global_step": 3624,
+    "which": "raw",
+    "train": {
+      "loss": 0.2619632973654163,
+      "train_acc": 0.8506473724295507,
+      "n": 13130,
+      "last_loss": 0.228532075881958,
+      "last_lr": 0.0027556993999482103,
+      "last_eval_step": 3500,
+      "resumed_from_step": null,
+      "resumed_from_epoch": null,
+      "resumed_from_batch": null
+    },
+    "val": {
+      "n": 2317,
+      "macro_f1": 1.0,
+      "accuracy": 1.0,
+      "unsafe_recall": 0.9955995599559956,
+      "false_accepts": 4,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 1.2789568551500227e-07,
+      "ece": 1.2788519110351615e-07,
+      "tau": 1.0,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.018315639346837997,
+      "selection": 5.982398239823983
+    },
+    "peak_mem_mb": 1304.0458984375,
+    "elapsed_min": 27.49583795865377,
+    "epoch_seconds": 247.11766171455383,
+    "test_sources": [
+      "snacks"
+    ],
+    "lr": 0.0027556993999482103
+  },
+  {
+    "epoch": 8,
+    "global_step": 4077,
+    "which": "ema",
+    "train": {
+      "loss": 0.26468907080687193,
+      "train_acc": 0.8495049504950495,
+      "n": 13130,
+      "last_loss": 0.2499181032180786,
+      "last_lr": 0.002652575998031682,
+      "last_eval_step": 4000,
+      "resumed_from_step": null,
+      "resumed_from_epoch": null,
+      "resumed_from_batch": null
+    },
+    "val": {
+      "n": 2317,
+      "macro_f1": 1.0,
+      "accuracy": 1.0,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 6.226845846887858e-09,
+      "ece": 6.226824278421361e-09,
+      "tau": 0.9999999999993919,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.08193445950746536,
+      "selection": 5.920792079207921
+    },
+    "peak_mem_mb": 1304.0458984375,
+    "elapsed_min": 31.42395292123159,
+    "epoch_seconds": 235.46252465248108,
+    "test_sources": [
+      "snacks"
+    ],
+    "lr": 0.002652575998031682
+  },
+  {
+    "epoch": 9,
+    "global_step": 4530,
+    "which": "raw",
+    "train": {
+      "loss": 0.26513409417772327,
+      "train_acc": 0.8416603198781416,
+      "n": 13130,
+      "last_loss": 0.39208149909973145,
+      "last_lr": 0.002534068832235069,
+      "last_eval_step": 4500,
+      "resumed_from_step": null,
+      "resumed_from_epoch": null,
+      "resumed_from_batch": null
+    },
+    "val": {
+      "n": 2317,
+      "macro_f1": 1.0,
+      "accuracy": 1.0,
+      "unsafe_recall": 0.9977997799779978,
+      "false_accepts": 2,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 7.563029573558325e-05,
+      "ece": 6.937605414208933e-05,
+      "tau": 1.0,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.018315639346837997,
+      "selection": 5.991199119911991
+    },
+    "peak_mem_mb": 1304.0458984375,
+    "elapsed_min": 35.61238793929418,
+    "epoch_seconds": 251.07212591171265,
+    "test_sources": [
+      "snacks"
+    ],
+    "lr": 0.002534068832235069
+  },
+  {
+    "epoch": 10,
+    "global_step": 4983,
+    "which": "ema",
+    "train": {
+      "loss": 0.26147875007630667,
+      "train_acc": 0.8578065498857578,
+      "n": 13130,
+      "last_loss": 0.2271382212638855,
+      "last_lr": 0.002401780508678637,
+      "last_eval_step": 0,
+      "resumed_from_step": null,
+      "resumed_from_epoch": null,
+      "resumed_from_batch": null
+    },
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.9990951834235416,
+      "accuracy": 0.9991368148467846,
+      "unsafe_recall": 0.9812981298129813,
+      "false_accepts": 17,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 0.0008246031415997105,
+      "ece": 0.0005650722367107309,
+      "tau": 0.9999999983042122,
+      "per_class_recall": {
+        "GOOD": 0.9985795454545454,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1406,
+          "RISK": 0,
+          "REJECTED": 2,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.09903383255004883,
+      "selection": 5.924287702675467
+    },
+    "peak_mem_mb": 1304.0458984375,
+    "elapsed_min": 42.3581263979276,
+    "epoch_seconds": 404.57381868362427,
+    "test_sources": [
+      "snacks"
+    ],
+    "lr": 0.002401780508678637
+  },
+  {
+    "epoch": 11,
+    "global_step": 5436,
+    "which": "ema",
+    "train": {
+      "loss": 0.2585929865702726,
+      "train_acc": 0.858948971820259,
+      "n": 13130,
+      "last_loss": 0.22427639365196228,
+      "last_lr": 0.0022574999999999995,
+      "last_eval_step": 5000,
+      "resumed_from_step": null,
+      "resumed_from_epoch": null,
+      "resumed_from_batch": null
+    },
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.9990948313581358,
+      "accuracy": 0.9991368148467846,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 0.0014255629481709348,
+      "ece": 0.0007435121582261909,
+      "tau": 0.999999849417057,
+      "per_class_recall": {
+        "GOOD": 0.9992897727272727,
+        "RISK": null,
+        "REJECTED": 0.9988998899889989,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1407,
+          "RISK": 0,
+          "REJECTED": 1,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 1,
+          "RISK": 0,
+          "REJECTED": 908,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.1825217306613922,
+      "selection": 5.919886910566056
+    },
+    "peak_mem_mb": 1304.0458984375,
+    "elapsed_min": 45.649085303147636,
+    "epoch_seconds": 197.29054999351501,
+    "test_sources": [
+      "snacks"
+    ],
+    "lr": 0.0022574999999999995
+  },
+  {
+    "epoch": 12,
+    "global_step": 5889,
+    "which": "raw",
+    "train": {
+      "loss": 0.264762661743963,
+      "train_acc": 0.8530845392231531,
+      "n": 13130,
+      "last_loss": 0.22074410319328308,
+      "last_lr": 0.0021031784525681477,
+      "last_eval_step": 5500,
+      "resumed_from_step": null,
+      "resumed_from_epoch": null,
+      "resumed_from_batch": null
+    },
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.9990951834235416,
+      "accuracy": 0.9991368148467846,
+      "unsafe_recall": 0.9801980198019802,
+      "false_accepts": 18,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 0.001212881714340089,
+      "ece": 0.0007630432530623255,
+      "tau": 0.999996285914635,
+      "per_class_recall": {
+        "GOOD": 0.9985795454545454,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1406,
+          "RISK": 0,
+          "REJECTED": 2,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.19807182252407074,
+      "selection": 5.9198872626314625
+    },
+    "peak_mem_mb": 1304.0458984375,
+    "elapsed_min": 48.82073332866033,
+    "epoch_seconds": 190.10879349708557,
+    "test_sources": [
+      "snacks"
+    ],
+    "lr": 0.0021031784525681477
+  },
+  {
+    "epoch": 13,
+    "global_step": 6342,
+    "which": "ema",
+    "train": {
+      "loss": 0.25911013467658683,
+      "train_acc": 0.8648134044173648,
+      "n": 13130,
+      "last_loss": 0.22126297652721405,
+      "last_lr": 0.001940902800575969,
+      "last_eval_step": 6000,
+      "resumed_from_step": null,
+      "resumed_from_epoch": null,
+      "resumed_from_batch": null
+    },
+    "val": {
+      "n": 2317,
+      "macro_f1": 0.9995475038009094,
+      "accuracy": 0.9995684074233924,
+      "unsafe_recall": 0.9812981298129813,
+      "false_accepts": 17,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 0.00036522308582455566,
+      "ece": 0.0002554716811424937,
+      "tau": 0.9999999999994083,
+      "per_class_recall": {
+        "GOOD": 0.9992897727272727,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1407,
+          "RISK": 0,
+          "REJECTED": 1,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.0899018794298172,
+      "selection": 5.924740023052834
+    },
+    "peak_mem_mb": 1304.0458984375,
+    "elapsed_min": 52.11077622175217,
+    "epoch_seconds": 197.2364103794098,
+    "test_sources": [
+      "snacks"
+    ],
+    "lr": 0.001940902800575969
+  },
+  {
+    "epoch": 14,
+    "global_step": 6795,
+    "which": "ema",
+    "train": {
+      "loss": 0.26048306386523457,
+      "train_acc": 0.851942117288652,
+      "n": 13130,
+      "last_loss": 0.22623500227928162,
+      "last_lr": 0.0017728675438353915,
+      "last_eval_step": 6500,
+      "resumed_from_step": null,
+      "resumed_from_epoch": null,
+      "resumed_from_batch": null
+    },
+    "val": {
+      "n": 2317,
+      "macro_f1": 1.0,
+      "accuracy": 1.0,
+      "unsafe_recall": 0.9977997799779978,
+      "false_accepts": 2,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 7.800713612940478e-09,
+      "ece": 7.800653012424164e-09,
+      "tau": 1.0,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.051579974591732025,
+      "selection": 5.991199119911991
+    },
+    "peak_mem_mb": 1304.0458984375,
+    "elapsed_min": 55.361168110370635,
+    "epoch_seconds": 194.8590109348297,
+    "test_sources": [
+      "snacks"
+    ],
+    "lr": 0.0017728675438353915
+  },
+  {
+    "epoch": 15,
+    "global_step": 7248,
+    "which": "ema",
+    "train": {
+      "loss": 0.2554210823815194,
+      "train_acc": 0.8591012947448591,
+      "n": 13130,
+      "last_loss": 0.30714747309684753,
+      "last_lr": 0.0016013450709320566,
+      "last_eval_step": 7000,
+      "resumed_from_step": null,
+      "resumed_from_epoch": null,
+      "resumed_from_batch": null
+    },
+    "val": {
+      "n": 2317,
+      "macro_f1": 1.0,
+      "accuracy": 1.0,
+      "unsafe_recall": 0.9977997799779978,
+      "false_accepts": 2,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 8.34758747305434e-09,
+      "ece": 8.347507796102605e-09,
+      "tau": 1.0,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.027876917272806168,
+      "selection": 5.991199119911991
+    },
+    "peak_mem_mb": 1304.0458984375,
+    "elapsed_min": 59.108834369977316,
+    "epoch_seconds": 224.70333528518677,
+    "test_sources": [
+      "snacks"
+    ],
+    "lr": 0.0016013450709320566
+  },
+  {
+    "epoch": 16,
+    "global_step": 7701,
+    "which": "ema",
+    "train": {
+      "loss": 0.2594349969459325,
+      "train_acc": 0.8543792840822544,
+      "n": 13130,
+      "last_loss": 0.3501448631286621,
+      "last_lr": 0.0014286549290679434,
+      "last_eval_step": 7500,
+      "resumed_from_step": null,
+      "resumed_from_epoch": null,
+      "resumed_from_batch": null
+    },
+    "val": {
+      "n": 2317,
+      "macro_f1": 1.0,
+      "accuracy": 1.0,
+      "unsafe_recall": 0.9988998899889989,
+      "false_accepts": 1,
+      "good_auto_accept_rate": 1.0,
+      "not_food_recall": null,
+      "nll": 5.749382955351185e-09,
+      "ece": 5.749344667016487e-09,
+      "tau": 1.0,
+      "per_class_recall": {
+        "GOOD": 1.0,
+        "RISK": null,
+        "REJECTED": 1.0,
+        "NOT_FOOD": null
+      },
+      "confusion": {
+        "GOOD": {
+          "GOOD": 1408,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "RISK": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        },
+        "REJECTED": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 909,
+          "NOT_FOOD": 0
+        },
+        "NOT_FOOD": {
+          "GOOD": 0,
+          "RISK": 0,
+          "REJECTED": 0,
+          "NOT_FOOD": 0
+        }
+      },
+      "meets_recall_target": true,
+      "temperature": 0.02000771462917328,
+      "selection": 5.995599559955996
+    },
+    "peak_mem_mb": 1304.0458984375,
+    "elapsed_min": 63.25834861596425,
+    "epoch_seconds": 248.70748090744019,
+    "test_sources": [
+      "snacks"
+    ],
+    "lr": 0.0014286549290679434
+  }
+]

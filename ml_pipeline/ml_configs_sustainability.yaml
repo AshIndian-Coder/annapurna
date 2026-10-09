@@ -1,0 +1,20 @@
+# Impact factors. EVERY value below is an UNVERIFIED PLACEHOLDER until `verified: true` and `source` are filled.
+# The report prints a warning for each unverified factor. Do not quote the resulting numbers to judges as fact.
+portion_kg: 0.35
+
+factors:
+  co2e_kg_per_kg_food_waste_avoided:
+    value: 2.5
+    verified: false
+    source: null        # fill with a citable source (e.g. FAO, WRAP, an India-specific study)
+  cost_inr_per_kg_surplus:
+    value: 60
+    verified: false
+    source: null        # kitchen's own ingredient + labour + disposal cost per kg
+  water_litre_per_kg_food_waste_avoided:
+    value: null         # leave null to skip water reporting until a source is found
+    verified: false
+    source: null
+
+# Share of surplus that can realistically be redistributed (demo only).
+demo_redistribution_share: 0.30

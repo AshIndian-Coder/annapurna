@@ -1,0 +1,9 @@
+{
+  "classes_absent_from_train": [
+    "RISK",
+    "NOT_FOOD"
+  ],
+  "interpretation": "On this run, RISK and NOT_FOOD were absent from the training split, so their head rows were pinned to bias -30 and can never win the argmax. The shipped head is therefore a strong GOOD vs REJECTED core; RISK here is a decision zone over that core's release score, not a learned RISK class on this data.",
+  "recommendation": "To make RISK a learned class, add real RISK and NOT_FOOD rows to the training split (source images + labels, mapped into the existing index) and re-run the probe. Until then, treat the RISK band as human-review-on-uncertainty, not as evidence of early spoilage.",
+  "run_is_reusable": true
+}

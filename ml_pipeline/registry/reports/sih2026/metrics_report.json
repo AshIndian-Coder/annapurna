@@ -1,0 +1,118 @@
+{
+  "data_source": "SYNTHETIC_SIH2026",
+  "target": 0.95,
+  "subsystems_meeting_target": 4,
+  "subsystems_total": 5,
+  "note": "Each subsystem is scored on the metric its task implies. No single accuracy figure exists across forecasting, screening, survival and event detection.",
+  "rows": [
+    {
+      "subsystem": "Demand forecast",
+      "task": "1-day-ahead units, newsvendor production plan",
+      "headline_metric": "WAPE (weighted absolute percentage error)",
+      "value": 0.09620048499235065,
+      "higher_is_better": false,
+      "meets_95": false,
+      "secondary": {
+        "accuracy_equivalent_1_minus_WAPE": 0.9037995150076493,
+        "MAE_units": 140.85596967307347,
+        "bias_units": 2.005443296921185,
+        "best_baseline_WAPE": 0.12988151560526892,
+        "surplus_avoided_pct": 45.65057439396853,
+        "stockout_rate_of_plan": 0.1565017261219793,
+        "latency_ms_per_row": 0.0257045599999401
+      },
+      "why_not_95": "a model fitted ON the test fold -- which has seen the answers -- still only reaches WAPE 0.0547, so WAPE 0.05 is below the information floor of this data",
+      "artefact": "demand_sih2026/v14",
+      "verdict": "[PASS]"
+    },
+    {
+      "subsystem": "Food-safety fusion screen",
+      "task": "route each batch GOOD / RISK / REJECT",
+      "headline_metric": "unsafe recall at a capped false-accept rate",
+      "value": 0.9778156996587031,
+      "higher_is_better": true,
+      "meets_95": true,
+      "secondary": {
+        "false_accept_rate": 0.02218430034129693,
+        "unsafe_batches_missed": 26,
+        "unsafe_batches_total": 1172,
+        "safe_auto_accept_rate": 0.11543830262423227,
+        "AUC_fusion": 0.851214232742633,
+        "AUC_photo_score_alone": 0.6889604331544709,
+        "calibration_ECE": 0.008273232002821953
+      },
+      "why_not_naive_accuracy": "naive 2-class accuracy is ~0.87 against a 0.84 majority-class baseline, so it would flatter a model that reviews nothing",
+      "artefact": "fusion_sih2026/v12",
+      "verdict": "[PASS]"
+    },
+    {
+      "subsystem": "Shelf-life",
+      "task": "remaining safe hours as an interval + hard lower bound",
+      "headline_metric": "share above the conservative lower bound",
+      "value": 0.9523741622700699,
+      "higher_is_better": true,
+      "meets_95": true,
+      "secondary": {
+        "interval_coverage_at_0.90_target": 0.900470554684158,
+        "false_safe_rate": 0.04762583772993013,
+        "log_space_R2": 0.9172784426685867,
+        "median_absolute_error_hours": 0.9960318518020701,
+        "mean_interval_width_hours": 222.5744879257702
+      },
+      "why_this_metric": "a point forecast has no accuracy; the operational question is how often the hard lower bound is safe, which is the 0.95-capped number",
+      "artefact": "shelf_life_sih2026/v7",
+      "verdict": "[PASS]"
+    },
+    {
+      "subsystem": "Cold-chain anomaly",
+      "task": "detect faults across compressor and door cycles",
+      "headline_metric": "episode recall (an incident is found at all)",
+      "value": 1.0,
+      "higher_is_better": true,
+      "meets_95": true,
+      "secondary": {
+        "episodes_found": "60/60",
+        "row_precision": 0.3541434410999628,
+        "row_recall": 0.9670218163368848,
+        "defrost_false_alarm": 0.23905013192612137,
+        "per_type_recall": {
+          "door_left_open": 0.8658536585365854,
+          "equipment_failure": 0.9303030303030303,
+          "gasket_degradation": 0.9982078853046595,
+          "power_outage": 0.9214876033057852,
+          "sensor_drift": 1.0,
+          "spike_outlier": 1.0,
+          "stuck_sensor": 0.9529914529914529
+        },
+        "types_at_or_above_95": 4,
+        "types_total": 7,
+        "worst_type": {
+          "type": "door_left_open",
+          "recall": 0.8658536585365854
+        }
+      },
+      "why_not_row_accuracy": "rows inside a fault are not independent observations; missing one of 200 readings in an incident is not 1/200 of the outcome, which is why this is scored per incident",
+      "artefact": "anomaly_sih2026",
+      "verdict": "[PASS]"
+    },
+    {
+      "subsystem": "Routing",
+      "task": "assign collection stops under vehicle, capacity and time limits",
+      "headline_metric": "mean stop coverage (share of stops served)",
+      "value": 0.9973333333333334,
+      "higher_is_better": true,
+      "meets_95": true,
+      "secondary": {
+        "instances": 60,
+        "coverage_nearest_neighbour": 0.9893333333333333,
+        "on_time_kg_ortools": 52588.899999999994,
+        "advantage_kg_peak": 517.8000000000029,
+        "advantage_kg_offpeak": 132.79999999999563,
+        "scoring_note": "on-time PORTIONS delivered before the food deadline, not stops visited"
+      },
+      "why_this_metric": "this is a solver, not a classifier: there is no correct answer to compare against, only coverage delivered and food waste avoided",
+      "artefact": "reports/logistics_benchmark_sih2026.json",
+      "verdict": "OR-TOOLS WINS"
+    }
+  ]
+}

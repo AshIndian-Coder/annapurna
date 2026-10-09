@@ -79,26 +79,37 @@ class LogisticsService {
   /// Contract #21: POST /route — generate/retrieve an optimised route.
   /// The contract only defines route creation, not retrieval.
   /// Logistics drivers use this to get their assigned route.
-  Future<Result<List<DriverRoute>>> getTodayRoutes() async {
-    // Per contract, there's no GET for routes. We query surplus list
-    // filtered to IN_TRANSIT and build context from the route that was
-    // generated.
-    // For production, the driver receives route data via push notification
-    // (contract D23) and caches it locally.
-    final response = await _api.get('/surplus', queryParameters: {
-      'status': 'IN_TRANSIT',
-    }, parser: (data) {
-      if (data is Map<String, dynamic> && data.containsKey('items')) {
-        return extractList<DriverRoute>(data, DriverRoute.fromJson);
+  Future<Result<List<dynamic>>> getAvailableRoutes() async {
+    final response = await _api.get('/routes/available', parser: (data) {
+      if (data is Map<String, dynamic> && data['deliveries'] != null) {
+        return List<dynamic>.from(data['deliveries']);
       }
-      if (data is List) {
-         return data.map((e) => DriverRoute.fromJson(e)).toList();
-      }
-      return <DriverRoute>[]; 
+      return <dynamic>[];
     });
     return response.when(
       success: (data) => Success(data),
-      failure: (_) => const Success([]),
+      failure: (e) => Failure(e),
+    );
+  }
+
+  Future<Result<List<dynamic>>> getAssignedRoutes() async {
+    final response = await _api.get('/routes/assigned', parser: (data) {
+      if (data is Map<String, dynamic> && data['deliveries'] != null) {
+        return List<dynamic>.from(data['deliveries']);
+      }
+      return <dynamic>[];
+    });
+    return response.when(
+      success: (data) => Success(data),
+      failure: (e) => Failure(e),
+    );
+  }
+
+  Future<Result<bool>> assignRoute(String routeId) async {
+    final response = await _api.post('/routes/$routeId/assign', parser: (data) => true);
+    return response.when(
+      success: (_) => const Success(true),
+      failure: (e) => Failure(e),
     );
   }
 
@@ -114,7 +125,7 @@ class LogisticsService {
       'event_type': eventType,
       if (lat != null && lng != null) 'location': {'lat': lat, 'lng': lng},
       if (clientEventId != null) 'client_event_id': clientEventId,
-      'client_ts': DateTime.now().toIso8601String(),
+      'client_ts': DateTime.now().toUtc().toIso8601String(),
     }, parser: (data) => QrEvent.fromJson(data));
   }
 

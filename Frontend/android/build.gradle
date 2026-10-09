@@ -6,9 +6,31 @@ allprojects {
 }
 
 rootProject.buildDir = "../build"
-subprojects {
-    project.buildDir = "${rootProject.buildDir}/${project.name}"
+
+subprojects { subproject ->
+    subproject.buildDir = "${rootProject.buildDir}/${subproject.name}"
+
+    if (subproject.name != "app") {
+        subproject.ext.flutter = [
+            compileSdkVersion: 35,
+            minSdkVersion: 23,
+            targetSdkVersion: 35,
+            ndkVersion: "26.1.10909125"
+        ]
+
+        subproject.afterEvaluate {
+            if (subproject.hasProperty('android')) {
+                subproject.android {
+                    if (namespace == null || namespace.isEmpty()) {
+                        namespace = subproject.group.toString().isEmpty() ? "com.example.${subproject.name}" : subproject.group.toString()
+                    }
+                    compileSdkVersion = 35
+                }
+            }
+        }
+    }
 }
+
 subprojects {
     project.evaluationDependsOn(":app")
 }

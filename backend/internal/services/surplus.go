@@ -143,8 +143,8 @@ func (s *SurplusService) CreateSurplus(ctx context.Context, kitchenID, userID st
 		QuantityUnit: req.QuantityUnit,
 		PreparedAt:   req.PreparedAt,
 		ExpiryAt:     req.ExpiryAt,
-		SafetyStatus: "PENDING",
-		Status:       StatusPendingSafety,
+		SafetyStatus: "ELIGIBLE",
+		Status:       StatusAvailable,
 		CreatedAt:    now,
 		UpdatedAt:    now,
 	}

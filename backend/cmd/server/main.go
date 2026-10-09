@@ -74,16 +74,18 @@ func main() {
 	qualitySvc := services.NewQualityService(pool, rdb, mlClient)
 	approveSvc := services.NewApproveService(pool, qrChainSvc)
 	matchSvc := services.NewMatchingService(pool, qrChainSvc, pushSvc)
-	_ = matchSvc
 	qrSvc := services.NewQRService(pool, qrChainSvc)
 	syncSvc := services.NewSyncService(pool, rdb, surplusSvc, qualitySvc, qrSvc)
+	routeSvc := services.NewRoutingService(pool)
 
 	sseHub := sse.NewHub(ctx, rdb)
 
 	hAuth := handlers.NewAuthHandler(pool, rdb, cfg)
 	hKitchen := handlers.NewKitchenHandler(pool)
 	hPrediction := handlers.NewPredictionHandler(pool, mlClient, cfg.CarbonFactorKgCO2ePerKg)
-	hSurplus := handlers.NewSurplusHandler(surplusSvc, approveSvc)
+	hSurplus := handlers.NewSurplusHandler(surplusSvc, approveSvc, matchSvc)
+	hMatch := handlers.NewMatchingHandler(matchSvc, routeSvc)
+	hRouting := handlers.NewRoutingHandler(routeSvc)
 	hQuality := handlers.NewQualityHandler(qualitySvc, cfg.MaxUploadMB, cfg.UploadsDir)
 	hSync := handlers.NewSyncHandler(syncSvc)
 	hQR := handlers.NewQRHandler(qrSvc)
@@ -113,6 +115,17 @@ func main() {
 		r.Get("/surplus/{id}", hSurplus.Get)
 		r.Post("/surplus/{id}/approve", hSurplus.Approve)
 		r.Post("/surplus/{id}/divert", hSurplus.Divert)
+
+		// Matching
+		r.Post("/surplus/{batchID}/match", hMatch.Match)
+		r.Post("/matches/{batchID}", hMatch.Match)
+		r.Get("/matches", hMatch.List)
+		r.Post("/matches/{matchID}/respond", hMatch.Respond)
+
+		// Routing / Logistics
+		r.Get("/routes/available", hRouting.ListAvailable)
+		r.Get("/routes/assigned", hRouting.ListAssigned)
+		r.Post("/routes/{routeID}/assign", hRouting.Assign)
 
 		r.Post("/quality/check", hQuality.Check)
 

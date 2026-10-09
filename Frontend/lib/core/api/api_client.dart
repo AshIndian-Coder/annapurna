@@ -15,8 +15,8 @@ List<T> extractList<T>(dynamic data, T Function(Map<String, dynamic>) parse) {
   final list = switch (data) {
     List<dynamic> l => l,
     Map<String, dynamic> m =>
-      (m['items'] ?? m['data'] ?? m['results']) is List
-          ? (m['items'] ?? m['data'] ?? m['results']) as List
+      (m['items'] ?? m['data'] ?? m['results'] ?? m['matches']) is List
+          ? (m['items'] ?? m['data'] ?? m['results'] ?? m['matches']) as List
           : const <dynamic>[],
     _ => const <dynamic>[],
   };
@@ -39,7 +39,7 @@ double asDouble(dynamic value, [double fallback = 0]) {
   return fallback;
 }
 
-const String _baseUrl = String.fromEnvironment('API_URL', defaultValue: 'http://192.168.1.3:8000/api/v1');
+const String _baseUrl = String.fromEnvironment('API_URL', defaultValue: 'http://127.0.0.1:8000/api/v1');
 
 /// Whether the app talks to the real backend.
 ///

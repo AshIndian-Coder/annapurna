@@ -19,33 +19,76 @@ class _LogisticsScanScreenState extends ConsumerState<LogisticsScanScreen> {
   bool _isLoading = false;
 
   Future<void> _processScan(String code) async {
-    if (_isLoading || code.isEmpty) return;
+    final cleanCode = code.trim();
+    if (_isLoading || cleanCode.isEmpty) return;
     setState(() => _isLoading = true);
 
-    final service = ref.read(logisticsServiceProvider);
-    final eventId = const Uuid().v7();
-    
-    final result = await service.scanEvent(
-      code,
-      eventType: _eventType,
-      clientEventId: eventId,
-    );
-    
-    if (!mounted) return;
-    setState(() => _isLoading = false);
+    try {
+      final service = ref.read(logisticsServiceProvider);
+      final eventId = const Uuid().v7();
+      
+      final result = await service.scanEvent(
+        cleanCode,
+        eventType: _eventType,
+        clientEventId: eventId,
+      );
+      
+      if (!mounted) return;
+      setState(() => _isLoading = false);
 
-    result.when(
-      success: (_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Marked as ${_eventType.replaceAll('_', ' ')}'), backgroundColor: AppColors.good),
-        );
-        _manualController.clear();
-      },
-      failure: (error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error.message), backgroundColor: AppColors.danger),
-        );
-      },
+      result.when(
+        success: (_) {
+          final isPickup = _eventType == 'PICKED_UP';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(isPickup ? 'Marked as Picked Up from Kitchen!' : 'Marked as Handed Off to NGO!'),
+              backgroundColor: AppColors.good,
+            ),
+          );
+          _manualController.clear();
+
+          if (isPickup) {
+            setState(() => _eventType = 'HANDED_OFF');
+          } else {
+            _showCompletionDialog();
+          }
+        },
+        failure: (error) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Scan failed: ${error.message}'), backgroundColor: AppColors.danger),
+          );
+        },
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.danger),
+      );
+    }
+  }
+
+  void _showCompletionDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceElevated,
+        icon: const Icon(Icons.check_circle, color: AppColors.good, size: 60),
+        title: const Text('Delivery Completed!'),
+        content: const Text(
+          'Food surplus has been safely handed off and verified with the recipient NGO.',
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+            },
+            child: const Text('Done'),
+          ),
+        ],
+      ),
     );
   }
 

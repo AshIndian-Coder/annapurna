@@ -1,0 +1,25 @@
+# Core (CPU) requirements -- demand, safety fusion, processing, logistics, impact.
+# The image pipeline has its own file: ml_requirements-cv.txt
+#
+#   python -m venv .venv
+#   # Windows: .venv\Scripts\activate   Linux/WSL/macOS: source .venv/bin/activate
+#   pip install -r ml_requirements.txt
+#
+# Pinned to floors, not exact versions: a floor lets a fresh clone install on a machine
+# that already has a newer compatible wheel, and pip's resolver still prevents an
+# incompatible upgrade. Exact pins belong in ml_requirements.lock, written by
+# `pip freeze` after a run that produced the numbers in docs/evaluation/.
+
+numpy>=1.26
+pandas>=2.1
+pyarrow>=15.0          # parquet for the simulators and the registry tables
+scipy>=1.11
+scikit-learn>=1.4
+lightgbm>=4.3          # quantile objective for the demand model
+holidays>=0.50         # Indian festival calendar as an exogenous demand feature
+joblib>=1.3
+pyyaml>=6.0            # ml_configs_fusion.yaml, ml_configs_sustainability.yaml
+ortools>=9.9           # VRPTW routing (ml_logistics_route.py)
+shap>=0.45             # per-request top drivers; optional, falls back to gain importance
+optuna>=3.6            # optional hyper-parameter search (ml_demand_train.py --tune)
+pytest>=8.0
